@@ -12,1289 +12,345 @@
   --paper: #f5f2eb;
   --paper2: #edeae1;
   --gold: #c9a84c;
-  --gold-light: #e8c97a;
+  --gold-l: #e8c97a;
   --rust: #b94040;
   --teal: #2a7a6f;
-  --teal-light: #3db89f;
   --dim: #8a8680;
   --rule: #d8d4ca;
-  --card: #fff;
-  --ink-light: #2d2d38;
+  --card: #ffffff;
+  --ink2: #2d2d38;
   --mono: 'JetBrains Mono', monospace;
-  --display: 'Syne', sans-serif;
-  --serif: 'Fraunces', serif;
+  --disp: 'Syne', sans-serif;
+  --ser: 'Fraunces', serif;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; font-size: 16px; }
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { background: var(--paper); color: var(--ink); font-family: var(--disp); overflow-x: hidden; }
 
-body {
-  background: var(--paper);
-  color: var(--ink);
-  font-family: var(--display);
-  overflow-x: hidden;
-}
-
-/* ── SCROLLBAR ── */
+/* SCROLLBAR */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--paper2); }
 ::-webkit-scrollbar-thumb { background: var(--gold); }
 
-/* ── PROGRESS BAR ── */
+/* PROGRESS */
 #progress {
-  position: fixed; top: 0; left: 0;
-  height: 3px; background: var(--gold);
-  z-index: 9999; width: 0%;
-  transition: width 0.1s;
+  position: fixed; top: 0; left: 0; height: 3px;
+  background: var(--gold); z-index: 9999; width: 0%;
+  transition: width 0.1s linear; pointer-events: none;
 }
 
-/* ── SIDEBAR NAV ── */
-#sidebar {
-  position: fixed;
-  left: 0; top: 0; bottom: 0;
-  width: 220px;
-  border-right: 1px solid var(--rule);
-  background: var(--paper);
-  z-index: 100;
-  display: flex;
-  flex-direction: column;
-  padding: 32px 0;
-  transition: transform 0.3s;
+/* HAMBURGER BUTTON — always visible, top-right */
+#ham {
+  position: fixed; top: 14px; right: 14px; z-index: 1100;
+  width: 46px; height: 46px; background: var(--ink); border: none;
+  cursor: pointer; display: flex; flex-direction: column;
+  justify-content: center; align-items: center; gap: 5px;
 }
-
-.sidebar-logo {
-  padding: 0 28px 32px;
-  border-bottom: 1px solid var(--rule);
-  margin-bottom: 24px;
+#ham span {
+  display: block; width: 22px; height: 2px; background: var(--gold);
+  transition: transform 0.25s, opacity 0.25s;
 }
+#ham.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+#ham.open span:nth-child(2) { opacity: 0; }
+#ham.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-.sidebar-logo-text {
-  font-family: var(--display);
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -1px;
-  line-height: 1;
+/* OVERLAY */
+#ov {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45); z-index: 1050;
 }
+#ov.show { display: block; }
 
-.sidebar-logo-text span { color: var(--gold); }
-
-.sidebar-tag {
-  font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 2px;
-  color: var(--dim);
-  margin-top: 6px;
-  text-transform: uppercase;
+/* SIDEBAR */
+#nav {
+  position: fixed; top: 0; left: 0; bottom: 0; width: 240px;
+  background: var(--paper); border-right: 1px solid var(--rule);
+  z-index: 1060; display: flex; flex-direction: column; padding: 28px 0;
+  transform: translateX(-100%); transition: transform 0.3s ease;
+  overflow-y: auto;
 }
+#nav.open { transform: translateX(0); }
 
-.nav-section-label {
-  font-family: var(--mono);
-  font-size: 8px;
-  letter-spacing: 3px;
-  color: var(--dim);
-  text-transform: uppercase;
-  padding: 16px 28px 8px;
-}
+.nav-logo { padding: 0 24px 22px; border-bottom: 1px solid var(--rule); margin-bottom: 18px; }
+.nav-logo-text { font-family: var(--disp); font-size: 22px; font-weight: 800; letter-spacing: -1px; }
+.nav-logo-text span { color: var(--gold); }
+.nav-logo-sub { font-family: var(--mono); font-size: 9px; color: var(--dim); letter-spacing: 2px; margin-top: 5px; text-transform: uppercase; }
 
+.nav-label { font-family: var(--mono); font-size: 8px; letter-spacing: 3px; color: var(--dim); text-transform: uppercase; padding: 14px 24px 6px; }
 nav ul { list-style: none; }
 nav ul li a {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 28px;
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--dim);
-  text-decoration: none;
-  letter-spacing: 0.5px;
-  border-left: 2px solid transparent;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 24px; font-family: var(--mono); font-size: 11px;
+  color: var(--dim); text-decoration: none; letter-spacing: 0.5px;
+  border-left: 2px solid transparent; transition: all 0.15s;
 }
 nav ul li a:hover { color: var(--ink); background: var(--paper2); }
-nav ul li a.active {
-  color: var(--gold);
-  border-left-color: var(--gold);
-  background: rgba(201,168,76,0.06);
-}
-nav ul li a .nav-num {
-  font-size: 9px;
-  color: var(--dim);
-  min-width: 20px;
+nav ul li a.on { color: var(--gold); border-left-color: var(--gold); background: rgba(201,168,76,0.06); }
+.nn { font-size: 9px; color: var(--dim); min-width: 22px; }
+
+.nav-foot {
+  margin-top: auto; padding: 18px 24px 0; border-top: 1px solid var(--rule);
+  font-family: var(--mono); font-size: 9px; color: var(--dim); letter-spacing: 1px; line-height: 1.9;
 }
 
-.sidebar-footer {
-  margin-top: auto;
-  padding: 24px 28px 0;
-  border-top: 1px solid var(--rule);
-}
+/* MAIN CONTENT */
+main { width: 100%; }
 
-.sidebar-footer-text {
-  font-family: var(--mono);
-  font-size: 9px;
-  color: var(--dim);
-  letter-spacing: 1px;
-  line-height: 1.8;
-}
+/* SECTIONS */
+.s { padding: 88px 56px; border-bottom: 1px solid var(--rule); }
+.s:nth-child(odd) { background: var(--paper); }
+.s:nth-child(even) { background: var(--paper2); }
+.s-dark { background: var(--ink) !important; }
 
-/* ── MOBILE MENU ── */
-#mobile-menu-btn {
-  display: none;
-  position: fixed;
-  top: 16px; right: 16px;
-  z-index: 200;
-  background: var(--ink);
-  color: var(--paper);
-  border: none;
-  padding: 10px 16px;
-  font-family: var(--mono);
-  font-size: 11px;
-  cursor: pointer;
-  letter-spacing: 1px;
-}
+.inner { max-width: 1100px; margin: 0 auto; }
 
-/* ── MAIN CONTENT ── */
-main {
-  margin-left: 220px;
-  min-height: 100vh;
-}
+/* EYEBROW */
+.eye { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+.eye-n { font-family: var(--mono); font-size: 10px; color: var(--gold); letter-spacing: 3px; font-weight: 600; }
+.eye-r { width: 56px; height: 1px; background: var(--rule); }
+.eye-t { font-family: var(--mono); font-size: 9px; letter-spacing: 2px; color: var(--dim); text-transform: uppercase; border: 1px solid var(--rule); padding: 3px 10px; }
+.s-dark .eye-r { background: rgba(255,255,255,0.08); }
+.s-dark .eye-t { border-color: rgba(255,255,255,0.1); color: rgba(245,242,235,0.3); }
 
-/* ── SECTIONS ── */
-.pitch-section {
-  min-height: 100vh;
-  border-bottom: 1px solid var(--rule);
-  padding: 80px 72px 80px 80px;
-  position: relative;
-}
+/* TYPOGRAPHY */
+.h1 { font-family: var(--disp); font-size: clamp(36px,5vw,72px); font-weight: 700; letter-spacing: -2px; line-height: 1; margin-bottom: 18px; }
+.h1 .g { color: var(--gold); }
+.h1 .r { color: var(--rust); }
+.lead { font-family: var(--ser); font-size: 18px; font-weight: 300; color: var(--ink2); line-height: 1.7; max-width: 620px; font-style: italic; }
+.bod { font-size: 14px; color: var(--dim); line-height: 1.8; max-width: 600px; margin-top: 14px; }
+.bod strong { color: var(--ink); font-weight: 600; }
+.s-dark .h1 { color: var(--paper); }
+.s-dark .lead { color: rgba(245,242,235,0.5); }
+.s-dark .bod { color: rgba(245,242,235,0.38); }
+.s-dark .bod strong { color: var(--paper); }
 
-.pitch-section:nth-child(odd) { background: var(--paper); }
-.pitch-section:nth-child(even) { background: var(--paper2); }
+/* GRIDS */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; margin-top: 44px; }
+.g2w { display: grid; grid-template-columns: 1.3fr 1fr; gap: 60px; align-items: start; margin-top: 44px; }
 
-.section-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 32px;
-}
-
-.section-num {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--gold);
-  letter-spacing: 3px;
-  font-weight: 600;
-}
-
-.section-rule { flex: 1; height: 1px; background: var(--rule); max-width: 80px; }
-
-.section-tag {
-  font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 2px;
-  color: var(--dim);
-  text-transform: uppercase;
-  border: 1px solid var(--rule);
-  padding: 3px 10px;
-}
-
-.section-h1 {
-  font-family: var(--display);
-  font-size: clamp(48px, 6vw, 96px);
-  font-weight: 800;
-  line-height: 0.95;
-  letter-spacing: -3px;
-  margin-bottom: 32px;
-}
-
-.section-h1 .gold { color: var(--gold); }
-.section-h1 .rust { color: var(--rust); }
-.section-h1 .teal { color: var(--teal); }
-
-.section-h2 {
-  font-family: var(--display);
-  font-size: clamp(32px, 4vw, 56px);
-  font-weight: 700;
-  letter-spacing: -2px;
-  line-height: 1;
-  margin-bottom: 24px;
-}
-
-.section-lead {
-  font-family: var(--serif);
-  font-size: 20px;
-  font-weight: 300;
-  color: var(--ink-light);
-  line-height: 1.7;
-  max-width: 600px;
-  font-style: italic;
-}
-
-.body-text {
-  font-size: 15px;
-  color: var(--dim);
-  line-height: 1.8;
-  max-width: 600px;
-  margin-top: 20px;
-}
-
-.body-text strong { color: var(--ink); font-weight: 600; }
-
-/* ── HERO SECTION ── */
+/* HERO */
 #hero {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background: var(--ink);
-  padding: 80px;
-  position: relative;
-  overflow: hidden;
+  min-height: 100vh; display: flex; flex-direction: column;
+  justify-content: center; background: var(--ink);
+  padding: 80px 64px; position: relative; overflow: hidden;
 }
-
-.hero-grid {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
+.h-grid {
+  position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
     linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
   background-size: 48px 48px;
 }
-
-.hero-glow {
-  position: absolute;
-  width: 600px; height: 600px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 70%);
-  top: -100px; right: -100px;
-  pointer-events: none;
-}
-
-.hero-content { position: relative; z-index: 1; }
-
-.hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border: 1px solid rgba(201,168,76,0.3);
-  padding: 6px 16px;
-  margin-bottom: 48px;
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 3px;
-  color: var(--gold);
-  text-transform: uppercase;
-}
-
-.hero-badge-dot {
-  width: 6px; height: 6px;
-  background: var(--gold);
-  border-radius: 50%;
-  animation: blink 1.5s infinite;
-}
-
-.hero-title {
-  font-family: var(--display);
-  font-size: clamp(64px, 10vw, 148px);
-  font-weight: 800;
-  line-height: 0.88;
-  letter-spacing: -6px;
-  color: #f5f2eb;
-  margin-bottom: 48px;
-}
-
-.hero-title .gold { color: var(--gold); }
-.hero-title .dim-text { color: rgba(245,242,235,0.2); }
-
-.hero-sub {
-  font-family: var(--serif);
-  font-size: 22px;
-  font-weight: 300;
-  color: rgba(245,242,235,0.6);
-  max-width: 560px;
-  line-height: 1.7;
-  font-style: italic;
-  margin-bottom: 64px;
-}
-
-.hero-stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0;
-  border: 1px solid rgba(201,168,76,0.2);
-  max-width: 700px;
-}
-
-.hero-stat {
-  padding: 24px 28px;
-  border-right: 1px solid rgba(201,168,76,0.2);
-}
-
-.hero-stat:last-child { border-right: none; }
-
-.hero-stat-val {
-  font-family: var(--display);
-  font-size: 32px;
-  font-weight: 800;
-  color: var(--gold);
-  letter-spacing: -2px;
-  line-height: 1;
-  display: block;
-}
-
-.hero-stat-label {
-  font-family: var(--mono);
-  font-size: 9px;
-  color: rgba(245,242,235,0.35);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  margin-top: 6px;
-  display: block;
-}
-
-.hero-nav-hint {
-  position: absolute;
-  bottom: 40px;
-  left: 80px;
-  font-family: var(--mono);
-  font-size: 10px;
-  color: rgba(245,242,235,0.25);
-  letter-spacing: 2px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.hero-nav-hint::before {
-  content: '';
-  width: 30px; height: 1px;
-  background: rgba(245,242,235,0.15);
-}
-
-/* ── TWO COL ── */
-.two-col {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 80px;
-  align-items: start;
-  margin-top: 60px;
-}
-
-.two-col-wide {
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 80px;
-  align-items: start;
-  margin-top: 60px;
-}
-
-/* ── PROBLEM CARDS ── */
-.problem-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1px;
-  background: var(--rule);
-  border: 1px solid var(--rule);
-  margin-top: 60px;
-}
-
-.problem-card {
-  background: var(--card);
-  padding: 40px 36px;
-  position: relative;
-}
-
-.problem-card.bad::before {
-  content: 'BROKEN';
-  position: absolute;
-  top: 20px; right: 20px;
-  font-family: var(--mono);
-  font-size: 8px;
-  letter-spacing: 2px;
-  color: var(--rust);
-  border: 1px solid var(--rust);
-  padding: 2px 8px;
-  opacity: 0.7;
-}
-
-.problem-card.good::before {
-  content: 'POW SOLVES';
-  position: absolute;
-  top: 20px; right: 20px;
-  font-family: var(--mono);
-  font-size: 8px;
-  letter-spacing: 2px;
-  color: var(--teal);
-  border: 1px solid var(--teal);
-  padding: 2px 8px;
-  opacity: 0.7;
-}
-
-.problem-icon { font-size: 32px; margin-bottom: 20px; }
-
-.problem-title {
-  font-family: var(--display);
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  margin-bottom: 12px;
-}
-
-.problem-body {
-  font-size: 14px;
-  color: var(--dim);
-  line-height: 1.7;
-}
-
-/* ── DATABASE SCHEMA ── */
-.db-canvas-wrap {
-  width: 100%;
-  overflow-x: auto;
-  border: 1px solid var(--rule);
-  background: var(--ink);
-  padding: 0;
-  position: relative;
-}
-
-#db-canvas {
-  display: block;
-  min-width: 900px;
-}
-
-.table-schema {
-  margin-top: 48px;
-}
-
-.table-schema + .table-schema { margin-top: 32px; }
-
-.table-name {
-  font-family: var(--mono);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--gold);
-  letter-spacing: 1px;
-  padding: 12px 20px;
-  background: var(--ink);
-  color: var(--gold);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.table-name-tag {
-  font-size: 9px;
-  letter-spacing: 2px;
-  color: rgba(201,168,76,0.5);
-}
-
-.schema-grid {
-  border: 1px solid var(--rule);
-  border-top: 2px solid var(--gold);
-  overflow: hidden;
-}
-
-.schema-head {
-  display: grid;
-  grid-template-columns: 180px 140px 60px 1fr;
-  background: var(--ink);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-
-.schema-head-cell {
-  padding: 8px 16px;
-  font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 2px;
-  color: rgba(245,242,235,0.3);
-  text-transform: uppercase;
-}
-
-.schema-row {
-  display: grid;
-  grid-template-columns: 180px 140px 60px 1fr;
-  border-bottom: 1px solid var(--rule);
-  background: var(--card);
-  transition: background 0.15s;
-}
-
-.schema-row:hover { background: rgba(201,168,76,0.03); }
-.schema-row:last-child { border-bottom: none; }
-
-.schema-cell {
-  padding: 10px 16px;
-  font-family: var(--mono);
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.col-name { color: var(--ink); font-weight: 500; }
-.col-type { color: var(--teal); }
-.col-pk {
-  background: var(--gold);
-  color: var(--ink);
-  font-size: 8px;
-  letter-spacing: 1px;
-  padding: 1px 6px;
-  font-weight: 700;
-}
-.col-fk {
-  background: var(--teal);
-  color: white;
-  font-size: 8px;
-  letter-spacing: 1px;
-  padding: 1px 6px;
-  font-weight: 700;
-}
-.col-idx {
-  font-size: 8px;
-  color: var(--dim);
-  letter-spacing: 1px;
-  border: 1px solid var(--rule);
-  padding: 1px 5px;
-}
-.col-desc { color: var(--dim); font-size: 11px; }
-
-/* ── SCORING VISUAL ── */
-.score-breakdown {
-  background: var(--ink);
-  padding: 48px;
-  border: 1px solid rgba(201,168,76,0.15);
-  margin-top: 40px;
-}
-
-.score-equation {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 40px;
-  flex-wrap: wrap;
-}
-
-.score-eq-part {
-  text-align: center;
-}
-
-.score-eq-val {
-  font-family: var(--display);
-  font-size: 36px;
-  font-weight: 800;
-  letter-spacing: -2px;
-  display: block;
-}
-
-.score-eq-label {
-  font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  display: block;
-  margin-top: 4px;
-}
-
-.score-eq-op {
-  font-family: var(--mono);
-  font-size: 24px;
-  color: rgba(245,242,235,0.2);
-  padding: 0 4px;
-}
-
-.score-bars { display: flex; flex-direction: column; gap: 20px; }
-
-.score-bar-item { }
-
-.score-bar-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 8px;
-}
-
-.score-bar-name {
-  font-family: var(--display);
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--paper);
-  letter-spacing: -0.5px;
-}
-
-.score-bar-meta {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: rgba(245,242,235,0.35);
-}
-
-.score-bar-track {
-  height: 6px;
-  background: rgba(245,242,235,0.06);
-  border-radius: 0;
-  overflow: hidden;
-}
-
-.score-bar-fill {
-  height: 100%;
-  border-radius: 0;
-  width: 0;
-  transition: width 1.4s cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-.score-bar-desc {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: rgba(245,242,235,0.3);
-  margin-top: 6px;
-  line-height: 1.6;
-}
-
-/* ── ARCHITECTURE FLOW ── */
-.arch-flow {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  border: 1px solid var(--rule);
-  overflow: hidden;
-  margin-top: 48px;
-}
-
-.arch-tier {
-  display: grid;
-  grid-template-columns: 140px 1fr;
-  border-bottom: 1px solid var(--rule);
-}
-
-.arch-tier:last-child { border-bottom: none; }
-
-.arch-tier-label {
-  background: var(--ink);
-  padding: 28px 24px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  border-right: 1px solid rgba(255,255,255,0.05);
-}
-
-.arch-tier-num {
-  font-family: var(--mono);
-  font-size: 9px;
-  color: var(--gold);
-  letter-spacing: 2px;
-  margin-bottom: 6px;
-}
-
-.arch-tier-name {
-  font-family: var(--display);
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--paper);
-  letter-spacing: -0.5px;
-  line-height: 1.2;
-}
-
-.arch-tier-content {
-  padding: 20px 28px;
-  background: var(--card);
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.arch-chip {
-  font-family: var(--mono);
-  font-size: 11px;
-  padding: 6px 14px;
-  border: 1px solid var(--rule);
-  color: var(--ink-light);
-  background: var(--paper);
-  cursor: default;
-  transition: all 0.15s;
-  letter-spacing: 0.5px;
-}
-
-.arch-chip:hover {
-  border-color: var(--gold);
-  color: var(--gold);
-  background: rgba(201,168,76,0.04);
-}
-
-.arch-chip.primary {
-  background: var(--ink);
-  color: var(--gold);
-  border-color: var(--gold);
-}
-
-.arch-chip.tech {
-  background: var(--teal);
-  color: white;
-  border-color: var(--teal);
-}
-
-.arch-arrow {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--paper2);
-  height: 32px;
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--dim);
-  border-bottom: 1px solid var(--rule);
-}
-
-/* ── SCALABILITY ── */
-.scale-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  background: var(--rule);
-  border: 1px solid var(--rule);
-  margin-top: 60px;
-}
-
-.scale-card {
-  background: var(--card);
-  padding: 40px 32px;
-  position: relative;
-  overflow: hidden;
-  cursor: default;
-  transition: background 0.2s;
-}
-
-.scale-card:hover { background: var(--paper2); }
-
-.scale-phase {
-  font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 3px;
-  color: var(--dim);
-  text-transform: uppercase;
-  margin-bottom: 20px;
-}
-
-.scale-users {
-  font-family: var(--display);
-  font-size: 40px;
-  font-weight: 800;
-  letter-spacing: -2px;
-  line-height: 1;
-  margin-bottom: 6px;
-}
-
-.scale-users.gold { color: var(--gold); }
-.scale-users.teal { color: var(--teal); }
-.scale-users.rust { color: var(--rust); }
-
-.scale-label {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--dim);
-  letter-spacing: 1px;
-  margin-bottom: 28px;
-}
-
-.scale-items { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-.scale-item {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--ink-light);
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  line-height: 1.5;
-}
-.scale-item::before {
-  content: '→';
-  color: var(--gold);
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-
-.scale-infra {
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid var(--rule);
-}
-
-.scale-infra-label {
-  font-family: var(--mono);
-  font-size: 8px;
-  letter-spacing: 2px;
-  color: var(--dim);
-  text-transform: uppercase;
-  margin-bottom: 10px;
-}
-
-.infra-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.infra-chip {
-  font-family: var(--mono);
-  font-size: 9px;
-  padding: 3px 8px;
-  background: var(--paper2);
-  border: 1px solid var(--rule);
-  color: var(--dim);
-  letter-spacing: 0.5px;
-}
-
-/* ── CODE BLOCK ── */
-.code-block {
-  background: var(--ink);
-  border: 1px solid rgba(255,255,255,0.06);
-  padding: 0;
-  overflow: hidden;
-  margin-top: 32px;
-}
-
-.code-header {
-  background: rgba(255,255,255,0.03);
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  padding: 12px 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.code-dots { display: flex; gap: 6px; }
-.code-dot {
-  width: 10px; height: 10px;
-  border-radius: 50%;
-}
-.code-dot:nth-child(1) { background: #ff5f57; }
-.code-dot:nth-child(2) { background: #febc2e; }
-.code-dot:nth-child(3) { background: #28c840; }
-
-.code-filename {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: rgba(245,242,235,0.4);
-  letter-spacing: 0.5px;
-}
-
-.code-body {
-  padding: 28px 28px;
-  overflow-x: auto;
-}
-
-pre {
-  font-family: var(--mono);
-  font-size: 12px;
-  line-height: 1.8;
-  color: rgba(245,242,235,0.75);
-  white-space: pre;
-}
-
-.kw { color: #c792ea; }
-.type { color: #82aaff; }
-.str { color: #c3e88d; }
-.num { color: #f78c6c; }
-.cm { color: rgba(245,242,235,0.25); }
-.fn { color: #82aaff; }
-.gold-t { color: var(--gold-light); }
-
-/* ── MARKET ── */
-.market-visual {
-  position: relative;
-  height: 280px;
-  border: 1px solid var(--rule);
-  background: var(--card);
-  overflow: hidden;
-  margin-top: 40px;
-}
-
-#market-canvas { width: 100%; height: 100%; }
-
-.tam-labels {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  background: var(--rule);
-  border: 1px solid var(--rule);
-  margin-top: 32px;
-}
-
-.tam-item {
-  background: var(--card);
-  padding: 32px 28px;
-  text-align: center;
-}
-
-.tam-val {
-  font-family: var(--display);
-  font-size: 40px;
-  font-weight: 800;
-  letter-spacing: -2px;
-  line-height: 1;
-}
-
-.tam-val.gold { color: var(--gold); }
-.tam-val.teal { color: var(--teal); }
-.tam-val.rust { color: var(--rust); }
-
-.tam-label {
-  font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 2px;
-  color: var(--dim);
-  text-transform: uppercase;
-  margin-top: 8px;
-}
-
-.tam-desc {
-  font-size: 12px;
-  color: var(--dim);
-  margin-top: 8px;
-  line-height: 1.5;
-}
-
-/* ── ROADMAP ── */
-.roadmap {
-  position: relative;
-  margin-top: 60px;
-}
-
-.roadmap::before {
-  content: '';
-  position: absolute;
-  left: 80px;
-  top: 0; bottom: 0;
-  width: 1px;
-  background: var(--rule);
-}
-
-.roadmap-item {
-  display: grid;
-  grid-template-columns: 160px 1fr;
-  gap: 40px;
-  margin-bottom: 48px;
-  position: relative;
-}
-
-.roadmap-item::before {
-  content: '';
-  position: absolute;
-  left: 80px;
-  top: 8px;
-  width: 9px; height: 9px;
-  background: var(--paper);
-  border: 2px solid var(--gold);
-  border-radius: 50%;
-  transform: translateX(-50%);
-  z-index: 1;
-}
-
-.roadmap-item.done::before {
-  background: var(--gold);
-}
-
-.roadmap-period {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--dim);
-  letter-spacing: 2px;
-  text-align: right;
-  padding-top: 4px;
-}
-
-.roadmap-phase {
-  font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 2px;
-  margin-bottom: 10px;
-}
-
-.roadmap-phase.gold { color: var(--gold); }
-.roadmap-phase.teal { color: var(--teal); }
-.roadmap-phase.rust { color: var(--rust); }
-
-.roadmap-title {
-  font-family: var(--display);
-  font-size: 24px;
-  font-weight: 700;
-  letter-spacing: -1px;
-  margin-bottom: 12px;
-}
-
-.roadmap-body {
-  font-size: 14px;
-  color: var(--dim);
-  line-height: 1.7;
-}
-
-.roadmap-features {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.roadmap-feature {
-  font-family: var(--mono);
-  font-size: 10px;
-  padding: 4px 12px;
-  border: 1px solid var(--rule);
-  color: var(--dim);
-  letter-spacing: 0.5px;
-}
-
-/* ── TEAM / CLOSING ── */
-.closing-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 80px;
-  margin-top: 60px;
-}
-
-.closing-big {
-  font-family: var(--display);
-  font-size: clamp(36px, 5vw, 72px);
-  font-weight: 800;
-  letter-spacing: -3px;
-  line-height: 0.95;
-  color: var(--paper);
-}
-
-.closing-big .gold { color: var(--gold); }
-
-.cta-block {
-  margin-top: 48px;
-}
-
-.cta-email {
-  font-family: var(--mono);
-  font-size: 16px;
-  color: var(--gold);
-  text-decoration: none;
-  border-bottom: 1px solid var(--gold);
-  padding-bottom: 4px;
-  display: inline-block;
-  margin-bottom: 24px;
-  transition: opacity 0.2s;
-}
-
-.cta-email:hover { opacity: 0.7; }
-
-.cta-meta {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: rgba(245,242,235,0.25);
-  letter-spacing: 2px;
-  line-height: 2;
-}
-
-.metric-row {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  margin-top: 40px;
-}
-
-.metric-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding-bottom: 16px;
-  border-bottom: 1px solid rgba(245,242,235,0.08);
-}
-
-.metric-key {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: rgba(245,242,235,0.35);
-  letter-spacing: 1px;
-}
-
-.metric-val {
-  font-family: var(--display);
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -1px;
-  color: var(--gold);
-}
-
-/* ── ANTI-GAMING ── */
-.detection-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1px;
-  background: var(--rule);
-  border: 1px solid var(--rule);
-  margin-top: 48px;
-}
-
-.detection-card {
-  background: var(--card);
-  padding: 32px 28px;
-}
-
-.detection-signal {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-
-.detection-signal.red { color: var(--rust); }
-.detection-signal.green { color: var(--teal); }
-
-.detection-title {
-  font-family: var(--display);
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  margin-bottom: 10px;
-}
-
-.detection-body {
-  font-size: 13px;
-  color: var(--dim);
-  line-height: 1.6;
-}
-
-/* ── ANIMATIONS ── */
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
-
-.reveal {
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-}
-
-.reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.reveal-left {
-  opacity: 0;
-  transform: translateX(-24px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-}
-
-.reveal-left.visible {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-/* ── FULL WIDTH DARK ── */
-.dark-section {
-  background: var(--ink) !important;
-}
-
-.dark-section .section-num { color: var(--gold); }
-.dark-section .section-tag { border-color: rgba(255,255,255,0.08); color: rgba(245,242,235,0.3); }
-.dark-section .section-h2 { color: var(--paper); }
-.dark-section .section-lead { color: rgba(245,242,235,0.5); }
-.dark-section .body-text { color: rgba(245,242,235,0.4); }
-.dark-section .body-text strong { color: var(--paper); }
-.dark-section .section-rule { background: rgba(255,255,255,0.08); }
-
-/* ── CONTENT WRAPPER — constrains width on large screens ── */
-.section-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-/* ── CODE & PRE overflow fix ── */
-.code-body { overflow-x: auto; }
-pre { white-space: pre; min-width: 0; }
-
-/* ── SCHEMA TABLE wrapper for horizontal scroll on small screens ── */
-.schema-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-.schema-grid { min-width: 640px; }
-
-/* ── SECTION padding scales with viewport ── */
-.pitch-section {
-  padding: clamp(60px, 8vh, 120px) clamp(32px, 5vw, 80px);
-}
-
-/* ── HERO full bleed ── */
-#hero { padding: clamp(60px, 8vh, 100px) clamp(40px, 6vw, 100px); }
-
-/* ── LARGE DESKTOP (≥1400px) ── */
-@media (min-width: 1400px) {
-  #sidebar { width: 260px; }
-  main { margin-left: 260px; }
-  .pitch-section { padding: 120px 100px; }
-  #hero { padding: 100px 120px; }
-  .hero-title { font-size: 160px; letter-spacing: -8px; }
-  .hero-sub { font-size: 24px; max-width: 640px; }
-  .hero-stats { max-width: 800px; }
-  .hero-stat-val { font-size: 38px; }
-  .two-col { gap: 100px; }
-  .two-col-wide { gap: 100px; }
-  .scale-grid { grid-template-columns: repeat(3, 1fr); }
-  .section-h2 { font-size: 64px; }
-  .section-lead { font-size: 22px; max-width: 680px; }
-  .body-text { font-size: 16px; max-width: 640px; }
-  .schema-head, .schema-row { grid-template-columns: 220px 160px 72px 1fr; }
-  .arch-tier-label { width: 180px; }
-  .closing-big { font-size: 80px; }
-}
-
-/* ── STANDARD DESKTOP (900px–1400px) ── */
-@media (min-width: 900px) and (max-width: 1399px) {
-  .schema-head, .schema-row { grid-template-columns: 180px 140px 60px 1fr; }
-  .scale-grid { grid-template-columns: repeat(3, 1fr); }
-}
-
-/* ── TABLET & MOBILE (< 900px) ── */
-@media (max-width: 899px) {
-  #sidebar { transform: translateX(-100%); width: 240px; }
-  #sidebar.open { transform: translateX(0); box-shadow: 4px 0 40px rgba(0,0,0,0.2); }
-  #mobile-menu-btn { display: block; }
-  main { margin-left: 0; }
-  .pitch-section { padding: 64px 24px; }
-  #hero { padding: 100px 24px 64px; }
-  .hero-nav-hint { left: 24px; bottom: 24px; }
-  .two-col, .two-col-wide { grid-template-columns: 1fr; gap: 40px; }
-  .problem-grid { grid-template-columns: 1fr; }
-  .scale-grid { grid-template-columns: 1fr; }
-  .hero-stats { grid-template-columns: 1fr 1fr; max-width: 100%; }
-  .hero-stat { border-bottom: 1px solid rgba(201,168,76,0.15); }
-  .closing-grid { grid-template-columns: 1fr; }
-  .tam-labels { grid-template-columns: 1fr; }
-  .detection-grid { grid-template-columns: 1fr; }
-  .roadmap::before { left: 60px; }
-  .roadmap-item { grid-template-columns: 110px 1fr; gap: 16px; }
-  .roadmap-item::before { left: 60px; }
-  .score-breakdown { padding: 28px; }
-}
-
-/* ── MOBILE (< 600px) ── */
-@media (max-width: 599px) {
-  .hero-stats { grid-template-columns: 1fr 1fr; }
-  .hero-title { font-size: clamp(56px, 16vw, 96px); letter-spacing: -4px; }
-  .schema-head { display: none; }
-  .schema-row { grid-template-columns: 1fr 1fr; }
-  .schema-cell:nth-child(3), .schema-cell:nth-child(4) { display: none; }
-  .score-equation { gap: 6px; }
-  .score-eq-val { font-size: 22px; }
-  .arch-tier { grid-template-columns: 1fr; }
-  .arch-tier-label { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 20px; flex-direction: row; align-items: center; gap: 12px; }
-  .arch-tier-name { font-size: 12px; }
-  .roadmap-item { grid-template-columns: 1fr; }
-  .roadmap::before { display: none; }
-  .roadmap-item::before { display: none; }
-  .roadmap-period { font-size: 9px; margin-bottom: 6px; text-align: left; }
-  .detection-grid { grid-template-columns: 1fr; }
-  .closing-big { font-size: clamp(36px, 12vw, 56px); letter-spacing: -2px; }
-  .metric-key { font-size: 9px; letter-spacing: 0.5px; }
-  .metric-val { font-size: 18px; }
-  .tam-labels { grid-template-columns: 1fr; }
-  .vision-grid { grid-template-columns: 1fr; }
-  #hero { padding: 80px 20px 60px; }
-  .pitch-section { padding: 56px 20px; }
-  .code-body { padding: 20px 16px; }
-  pre { font-size: 11px; }
-  .arch-chip { font-size: 10px; padding: 5px 10px; }
+.h-glow {
+  position: absolute; width: 700px; height: 700px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(201,168,76,0.1) 0%, transparent 70%);
+  top: -150px; right: -150px; pointer-events: none;
+}
+.h-body { position: relative; z-index: 1; max-width: 900px; }
+
+.h-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid rgba(201,168,76,0.3); padding: 6px 16px;
+  margin-bottom: 36px; font-family: var(--mono); font-size: 10px;
+  letter-spacing: 3px; color: var(--gold); text-transform: uppercase;
+}
+.h-dot { width: 6px; height: 6px; background: var(--gold); border-radius: 50%; animation: blink 1.5s infinite; }
+
+.h-title {
+  font-family: var(--disp); font-size: clamp(72px,11vw,148px);
+  font-weight: 800; line-height: 0.88; letter-spacing: -5px;
+  color: var(--paper); margin-bottom: 36px;
+}
+.h-title .g { color: var(--gold); }
+.h-title .f { color: rgba(245,242,235,0.15); }
+
+.h-sub {
+  font-family: var(--ser); font-size: 19px; font-weight: 300; font-style: italic;
+  color: rgba(245,242,235,0.5); max-width: 500px; line-height: 1.7; margin-bottom: 52px;
+}
+
+.h-stats { display: grid; grid-template-columns: repeat(4,1fr); border: 1px solid rgba(201,168,76,0.2); max-width: 660px; }
+.h-stat { padding: 20px 22px; border-right: 1px solid rgba(201,168,76,0.2); }
+.h-stat:last-child { border-right: none; }
+.hv { font-family: var(--disp); font-size: 28px; font-weight: 800; color: var(--gold); letter-spacing: -2px; line-height: 1; display: block; }
+.hl { font-family: var(--mono); font-size: 8px; color: rgba(245,242,235,0.28); letter-spacing: 2px; text-transform: uppercase; margin-top: 5px; display: block; }
+
+.h-hint { position: absolute; bottom: 32px; left: 64px; font-family: var(--mono); font-size: 10px; color: rgba(245,242,235,0.2); letter-spacing: 2px; }
+
+/* PROBLEM CARDS */
+.pgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-top: 44px; }
+.pc { background: var(--card); padding: 34px 28px; position: relative; }
+.pc.bad::after { content: 'BROKEN'; position: absolute; top: 16px; right: 16px; font-family: var(--mono); font-size: 8px; letter-spacing: 2px; color: var(--rust); border: 1px solid var(--rust); padding: 2px 8px; }
+.pc.good::after { content: 'POW SOLVES'; position: absolute; top: 16px; right: 16px; font-family: var(--mono); font-size: 8px; letter-spacing: 2px; color: var(--teal); border: 1px solid var(--teal); padding: 2px 8px; }
+.pi { font-size: 26px; margin-bottom: 14px; }
+.pt { font-family: var(--disp); font-size: 18px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 9px; }
+.pb { font-size: 13px; color: var(--dim); line-height: 1.7; }
+
+/* SCORE BOX */
+.sbox { background: var(--ink); padding: 36px; border: 1px solid rgba(201,168,76,0.15); margin-top: 28px; }
+.seq { display: flex; align-items: center; gap: 9px; margin-bottom: 28px; flex-wrap: wrap; }
+.eqp { text-align: center; }
+.eqv { font-family: var(--disp); font-size: 30px; font-weight: 800; letter-spacing: -2px; display: block; }
+.eql { font-family: var(--mono); font-size: 7px; letter-spacing: 2px; color: rgba(245,242,235,0.28); text-transform: uppercase; display: block; margin-top: 2px; }
+.eqo { font-family: var(--mono); font-size: 18px; color: rgba(245,242,235,0.18); }
+
+.sbars { display: flex; flex-direction: column; gap: 16px; }
+.sbi-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+.sbi-name { font-family: var(--disp); font-size: 13px; font-weight: 700; color: var(--paper); letter-spacing: -0.3px; }
+.sbi-meta { font-family: var(--mono); font-size: 8px; color: rgba(245,242,235,0.28); }
+.sbi-track { height: 4px; background: rgba(245,242,235,0.06); }
+.sbi-fill { height: 100%; width: 0; transition: width 1.4s cubic-bezier(0.23,1,0.32,1); }
+.sbi-desc { font-family: var(--mono); font-size: 8px; color: rgba(245,242,235,0.22); margin-top: 4px; line-height: 1.5; }
+
+/* CODE BLOCK */
+.cb { background: var(--ink); border: 1px solid rgba(255,255,255,0.06); overflow: hidden; margin-top: 20px; }
+.cb-hdr { background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 9px 16px; display: flex; align-items: center; gap: 9px; }
+.dots { display: flex; gap: 5px; }
+.d { width: 10px; height: 10px; border-radius: 50%; }
+.d:nth-child(1) { background: #ff5f57; }
+.d:nth-child(2) { background: #febc2e; }
+.d:nth-child(3) { background: #28c840; }
+.cb-fn { font-family: var(--mono); font-size: 9px; color: rgba(245,242,235,0.3); letter-spacing: 0.5px; }
+.cb-body { padding: 20px; overflow-x: auto; }
+pre { font-family: var(--mono); font-size: 11px; line-height: 1.8; color: rgba(245,242,235,0.72); white-space: pre; }
+.kw { color: #c792ea; } .ty { color: #82aaff; } .st { color: #c3e88d; } .nu { color: #f78c6c; }
+.cm { color: rgba(245,242,235,0.24); } .fn { color: #82aaff; } .gl { color: var(--gold-l); }
+
+/* ARCH */
+.arch { border: 1px solid var(--rule); overflow: hidden; margin-top: 36px; }
+.at { display: grid; grid-template-columns: 126px 1fr; border-bottom: 1px solid var(--rule); }
+.at:last-child { border-bottom: none; }
+.at-lbl { background: var(--ink); padding: 20px 16px; border-right: 1px solid rgba(255,255,255,0.05); }
+.at-n { font-family: var(--mono); font-size: 7px; color: var(--gold); letter-spacing: 2px; margin-bottom: 4px; }
+.at-name { font-family: var(--disp); font-size: 12px; font-weight: 700; color: var(--paper); letter-spacing: -0.3px; line-height: 1.2; }
+.at-chips { padding: 14px 20px; background: var(--card); display: flex; align-items: center; flex-wrap: wrap; gap: 7px; }
+.chip { font-family: var(--mono); font-size: 9px; padding: 4px 10px; border: 1px solid var(--rule); color: var(--ink2); background: var(--paper); transition: all 0.15s; }
+.chip:hover { border-color: var(--gold); color: var(--gold); }
+.chip.p { background: var(--ink); color: var(--gold); border-color: var(--gold); }
+.chip.t { background: var(--teal); color: #fff; border-color: var(--teal); }
+.at-arr { background: var(--paper2); height: 26px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 10px; color: var(--dim); border-bottom: 1px solid var(--rule); }
+
+/* SCHEMA */
+.ts { margin-top: 36px; }
+.ts + .ts { margin-top: 24px; }
+.ts-name { font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--gold); padding: 9px 16px; background: var(--ink); display: flex; align-items: center; gap: 9px; }
+.ts-tag { font-size: 7px; letter-spacing: 2px; color: rgba(201,168,76,0.4); }
+.ts-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.sg { border: 1px solid var(--rule); border-top: 2px solid var(--gold); min-width: 540px; }
+.sh { display: grid; grid-template-columns: 175px 135px 54px 1fr; background: var(--ink); border-bottom: 1px solid rgba(255,255,255,0.05); }
+.shc { padding: 6px 12px; font-family: var(--mono); font-size: 7px; letter-spacing: 2px; color: rgba(245,242,235,0.26); text-transform: uppercase; }
+.sr { display: grid; grid-template-columns: 175px 135px 54px 1fr; border-bottom: 1px solid var(--rule); background: var(--card); transition: background 0.12s; }
+.sr:hover { background: rgba(201,168,76,0.03); }
+.sr:last-child { border-bottom: none; }
+.sc { padding: 8px 12px; font-family: var(--mono); font-size: 10px; display: flex; align-items: center; gap: 4px; }
+.cn { color: var(--ink); font-weight: 500; }
+.ct { color: var(--teal); }
+.pk { background: var(--gold); color: var(--ink); font-size: 7px; letter-spacing: 1px; padding: 1px 5px; font-weight: 700; }
+.fk { background: var(--teal); color: #fff; font-size: 7px; letter-spacing: 1px; padding: 1px 5px; font-weight: 700; }
+.ix { font-size: 7px; color: var(--dim); letter-spacing: 1px; border: 1px solid var(--rule); padding: 1px 4px; }
+.cd { color: var(--dim); font-size: 9px; }
+
+/* SCALE */
+.sgrid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-top: 44px; }
+.scard { background: var(--card); padding: 32px 26px; }
+.sc-ph { font-family: var(--mono); font-size: 7px; letter-spacing: 3px; color: var(--dim); text-transform: uppercase; margin-bottom: 14px; }
+.sc-u { font-family: var(--disp); font-size: 42px; font-weight: 800; letter-spacing: -2px; line-height: 1; margin-bottom: 3px; }
+.sc-u.g { color: var(--gold); } .sc-u.t { color: var(--teal); } .sc-u.r { color: var(--rust); }
+.sc-l { font-family: var(--mono); font-size: 8px; color: var(--dim); letter-spacing: 1px; margin-bottom: 20px; }
+.sc-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.sc-li { font-family: var(--mono); font-size: 9px; color: var(--ink2); display: flex; gap: 7px; align-items: flex-start; line-height: 1.4; }
+.sc-li::before { content: '→'; color: var(--gold); flex-shrink: 0; }
+.sc-cost { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--rule); }
+.sc-cl { font-family: var(--mono); font-size: 7px; letter-spacing: 2px; color: var(--dim); text-transform: uppercase; margin-bottom: 5px; }
+.sc-cv { font-family: var(--disp); font-size: 24px; font-weight: 800; letter-spacing: -1px; }
+
+/* TAM */
+.tam { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-top: 28px; }
+.tam-i { background: var(--ink); padding: 26px 22px; text-align: center; }
+.tam-v { font-family: var(--disp); font-size: 38px; font-weight: 800; letter-spacing: -2px; line-height: 1; }
+.tam-v.g { color: var(--gold); } .tam-v.t { color: var(--teal); } .tam-v.r { color: var(--rust); }
+.tam-l { font-family: var(--mono); font-size: 7px; letter-spacing: 2px; color: rgba(245,242,235,0.28); text-transform: uppercase; margin-top: 5px; }
+.tam-d { font-size: 11px; color: rgba(245,242,235,0.22); margin-top: 5px; line-height: 1.5; }
+
+/* METRICS */
+.ml { display: flex; flex-direction: column; gap: 14px; margin-top: 28px; }
+.mr { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 12px; border-bottom: 1px solid rgba(245,242,235,0.07); }
+.mk { font-family: var(--mono); font-size: 9px; color: rgba(245,242,235,0.28); letter-spacing: 1px; }
+.mv { font-family: var(--disp); font-size: 19px; font-weight: 700; letter-spacing: -1px; color: var(--gold); }
+.mv.b { color: var(--paper); }
+
+/* DETECTION */
+.dgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-top: 36px; }
+.dc { background: var(--card); padding: 26px 22px; }
+.ds { font-family: var(--mono); font-size: 8px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 7px; }
+.ds.red { color: var(--rust); } .ds.grn { color: var(--teal); }
+.dt { font-family: var(--disp); font-size: 16px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 7px; }
+.db { font-size: 12px; color: var(--dim); line-height: 1.6; }
+
+/* ROADMAP */
+.rm { position: relative; margin-top: 44px; }
+.rm::before { content: ''; position: absolute; left: 108px; top: 0; bottom: 0; width: 1px; background: var(--rule); }
+.rmi { display: grid; grid-template-columns: 136px 1fr; gap: 28px; margin-bottom: 40px; position: relative; }
+.rmi::before { content: ''; position: absolute; left: 108px; top: 7px; width: 9px; height: 9px; background: var(--paper); border: 2px solid var(--gold); border-radius: 50%; transform: translateX(-50%); z-index: 1; }
+.rmi.done::before { background: var(--gold); }
+.rp { font-family: var(--mono); font-size: 8px; color: var(--dim); letter-spacing: 2px; text-align: right; padding-top: 3px; line-height: 1.4; }
+.rph { font-family: var(--mono); font-size: 7px; letter-spacing: 2px; margin-bottom: 7px; }
+.rph.g { color: var(--gold); } .rph.t { color: var(--teal); } .rph.r { color: var(--rust); }
+.rtit { font-family: var(--disp); font-size: 20px; font-weight: 700; letter-spacing: -1px; margin-bottom: 8px; }
+.rbod { font-size: 12px; color: var(--dim); line-height: 1.7; }
+.rfeat { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 12px; }
+.rf { font-family: var(--mono); font-size: 8px; padding: 3px 9px; border: 1px solid var(--rule); color: var(--dim); }
+
+/* CLOSING */
+.cgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 72px; margin-top: 44px; }
+.cbig { font-family: var(--disp); font-size: clamp(38px,5vw,68px); font-weight: 800; letter-spacing: -3px; line-height: 0.94; color: var(--paper); }
+.cbig .g { color: var(--gold); }
+.cemail { font-family: var(--mono); font-size: 14px; color: var(--gold); text-decoration: none; border-bottom: 1px solid var(--gold); padding-bottom: 2px; display: inline-block; margin: 28px 0 16px; }
+.cmeta { font-family: var(--mono); font-size: 9px; color: rgba(245,242,235,0.2); letter-spacing: 2px; line-height: 2; }
+
+/* REVEAL */
+.rev { opacity: 0; transform: translateY(18px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.rev.in { opacity: 1; transform: translateY(0); }
+
+/* ANIMATIONS */
+@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+
+/* RESPONSIVE */
+@media (max-width: 860px) {
+  .s { padding: 60px 24px; }
+  #hero { padding: 80px 24px 60px; }
+  .h-hint { left: 24px; }
+  .g2, .g2w { grid-template-columns: 1fr; gap: 36px; }
+  .pgrid { grid-template-columns: 1fr; }
+  .sgrid { grid-template-columns: 1fr; }
+  .tam { grid-template-columns: 1fr; }
+  .dgrid { grid-template-columns: 1fr; }
+  .cgrid { grid-template-columns: 1fr; gap: 36px; }
+  .h-stats { grid-template-columns: 1fr 1fr; max-width: 100%; }
+  .h-stat { border-bottom: 1px solid rgba(201,168,76,0.15); }
+  .rm::before { left: 80px; }
+  .rmi { grid-template-columns: 106px 1fr; gap: 18px; }
+  .rmi::before { left: 80px; }
+}
+@media (max-width: 520px) {
+  .s { padding: 48px 18px; }
+  #hero { padding: 72px 18px 48px; }
+  .h-title { font-size: clamp(52px, 15vw, 80px); letter-spacing: -3px; }
+  .h-stats { grid-template-columns: 1fr 1fr; }
+  .at { grid-template-columns: 1fr; }
+  .at-lbl { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 10px 16px; }
+  .rm::before { display: none; }
+  .rmi { grid-template-columns: 1fr; gap: 6px; }
+  .rmi::before { display: none; }
+  .rp { text-align: left; }
+  .sh { display: none; }
+  .sr { grid-template-columns: 1fr 1fr; }
+  .sc:nth-child(3), .sc:nth-child(4) { display: none; }
+}
+@media (min-width: 1280px) {
+  .s { padding: 100px 80px; }
+  #hero { padding: 100px 100px; }
+  .h-hint { left: 100px; }
 }
 </style>
 </head>
@@ -1302,667 +358,365 @@ pre { white-space: pre; min-width: 0; }
 
 <div id="progress"></div>
 
-<!-- SIDEBAR -->
-<div id="sidebar">
-  <div class="sidebar-logo">
-    <div class="sidebar-logo-text">P<span>O</span>W</div>
-    <div class="sidebar-tag">Investor Pitch · 2025</div>
+<!-- OVERLAY -->
+<div id="ov" onclick="closeNav()"></div>
+
+<!-- HAMBURGER -->
+<button id="ham" onclick="toggleNav()" aria-label="Toggle navigation">
+  <span></span><span></span><span></span>
+</button>
+
+<!-- SIDEBAR NAV -->
+<div id="nav">
+  <div class="nav-logo">
+    <div class="nav-logo-text">P<span>O</span>W</div>
+    <div class="nav-logo-sub">Investor Pitch · 2025</div>
   </div>
 
-  <div class="nav-section-label">Overview</div>
-  <nav>
-    <ul>
-      <li><a href="#hero"><span class="nav-num">00</span>Cover</a></li>
-      <li><a href="#problem"><span class="nav-num">01</span>The Problem</a></li>
-      <li><a href="#solution"><span class="nav-num">02</span>The Solution</a></li>
-      <li><a href="#scoring"><span class="nav-num">03</span>Scoring Engine</a></li>
-    </ul>
-  </nav>
+  <div class="nav-label">Overview</div>
+  <nav><ul>
+    <li><a href="#hero" onclick="closeNav()"><span class="nn">00</span>Cover</a></li>
+    <li><a href="#problem" onclick="closeNav()"><span class="nn">01</span>The Problem</a></li>
+    <li><a href="#solution" onclick="closeNav()"><span class="nn">02</span>The Solution</a></li>
+    <li><a href="#scoring" onclick="closeNav()"><span class="nn">03</span>Scoring Engine</a></li>
+  </ul></nav>
 
-  <div class="nav-section-label">Technical</div>
-  <nav>
-    <ul>
-      <li><a href="#database"><span class="nav-num">04</span>Database Schema</a></li>
-      <li><a href="#architecture"><span class="nav-num">05</span>Architecture</a></li>
-      <li><a href="#ingestion"><span class="nav-num">06</span>Data Ingestion</a></li>
-      <li><a href="#anti-gaming"><span class="nav-num">07</span>Anti-Gaming</a></li>
-    </ul>
-  </nav>
+  <div class="nav-label">Technical</div>
+  <nav><ul>
+    <li><a href="#database" onclick="closeNav()"><span class="nn">04</span>Database Schema</a></li>
+    <li><a href="#architecture" onclick="closeNav()"><span class="nn">05</span>Architecture</a></li>
+    <li><a href="#ingestion" onclick="closeNav()"><span class="nn">06</span>Data Ingestion</a></li>
+    <li><a href="#antigaming" onclick="closeNav()"><span class="nn">07</span>Anti-Gaming</a></li>
+  </ul></nav>
 
-  <div class="nav-section-label">Business</div>
-  <nav>
-    <ul>
-      <li><a href="#scalability"><span class="nav-num">08</span>Scalability</a></li>
-      <li><a href="#market"><span class="nav-num">09</span>Market Size</a></li>
-      <li><a href="#roadmap"><span class="nav-num">10</span>Roadmap</a></li>
-      <li><a href="#closing"><span class="nav-num">11</span>The Ask</a></li>
-    </ul>
-  </nav>
+  <div class="nav-label">Business</div>
+  <nav><ul>
+    <li><a href="#scalability" onclick="closeNav()"><span class="nn">08</span>Scalability</a></li>
+    <li><a href="#market" onclick="closeNav()"><span class="nn">09</span>Market Size</a></li>
+    <li><a href="#roadmap" onclick="closeNav()"><span class="nn">10</span>Roadmap</a></li>
+    <li><a href="#closing" onclick="closeNav()"><span class="nn">11</span>The Ask</a></li>
+  </ul></nav>
 
-  <div class="sidebar-footer">
-    <div class="sidebar-footer-text">
-      CONFIDENTIAL<br>
-      © 2025 Proof of Work<br>
-      pow.dev
-    </div>
-  </div>
+  <div class="nav-foot">CONFIDENTIAL<br>© 2025 Proof of Work<br>pow.dev</div>
 </div>
 
-<button id="mobile-menu-btn" onclick="toggleSidebar()">☰ MENU</button>
-
-<!-- MAIN -->
 <main>
 
 <!-- 00 HERO -->
-<section id="hero" class="pitch-section dark-section">
-  <div class="hero-grid"></div>
-  <div class="hero-glow"></div>
-  <div class="hero-content">
-    <div class="hero-badge">
-      <div class="hero-badge-dot"></div>
-      Confidential Investor Deck · 2025
-    </div>
-    <h1 class="hero-title">
-      PROOF<br>
-      <span class="gold">OF</span><br>
-      <span class="dim-text">WORK</span>
-    </h1>
-    <p class="hero-sub">
-      A global developer performance intelligence platform that measures real engineering execution — not social popularity.
-    </p>
-    <div class="hero-stats">
-      <div class="hero-stat">
-        <span class="hero-stat-val">26M+</span>
-        <span class="hero-stat-label">GitHub Devs</span>
-      </div>
-      <div class="hero-stat">
-        <span class="hero-stat-val">$12B</span>
-        <span class="hero-stat-label">TAM</span>
-      </div>
-      <div class="hero-stat">
-        <span class="hero-stat-val">5</span>
-        <span class="hero-stat-label">Score Signals</span>
-      </div>
-      <div class="hero-stat">
-        <span class="hero-stat-val">∞</span>
-        <span class="hero-stat-label">Scalable</span>
-      </div>
+<section id="hero">
+  <div class="h-grid"></div>
+  <div class="h-glow"></div>
+  <div class="h-body">
+    <div class="h-badge"><div class="h-dot"></div>Confidential Investor Deck · 2025</div>
+    <div class="h-title">PROOF<br><span class="g">OF</span><br><span class="f">WORK</span></div>
+    <p class="h-sub">A global developer performance intelligence platform that measures real engineering execution — not social popularity.</p>
+    <div class="h-stats">
+      <div class="h-stat"><span class="hv">26M+</span><span class="hl">GitHub Devs</span></div>
+      <div class="h-stat"><span class="hv">$12B</span><span class="hl">TAM</span></div>
+      <div class="h-stat"><span class="hv">5</span><span class="hl">Score Signals</span></div>
+      <div class="h-stat"><span class="hv">∞</span><span class="hl">Scalable</span></div>
     </div>
   </div>
-  <div class="hero-nav-hint">Use the sidebar to navigate slides</div>
+  <div class="h-hint">☰ Open menu to navigate sections</div>
 </section>
 
 <!-- 01 PROBLEM -->
-<section id="problem" class="pitch-section">
-<div class="section-inner">
-  <div class="section-eyebrow">
-    <span class="section-num">01</span>
-    <span class="section-rule"></span>
-    <span class="section-tag">The Problem</span>
+<section id="problem" class="s">
+<div class="inner">
+  <div class="eye"><span class="eye-n">01</span><span class="eye-r"></span><span class="eye-t">The Problem</span></div>
+  <h2 class="h1">Reputation is <span class="r">broken</span></h2>
+  <p class="lead rev">Every signal used to evaluate developers today is either manipulable, subjective, or irrelevant to engineering ability.</p>
+  <div class="pgrid rev">
+    <div class="pc bad">
+      <div class="pi">⭐</div>
+      <div class="pt">GitHub Stars</div>
+      <div class="pb">Stars measure marketing, not engineering. A viral README with zero meaningful code can accumulate tens of thousands of stars. They say nothing about a developer's actual ability to build production systems.</div>
+    </div>
+    <div class="pc bad">
+      <div class="pi">📱</div>
+      <div class="pt">Social Followers</div>
+      <div class="pb">Twitter/X, LinkedIn, and blog followings reward content creators, not code writers. The most prolific engineers are often the most invisible socially. Follower counts are gameable and decay rapidly.</div>
+    </div>
+    <div class="pc bad">
+      <div class="pi">📄</div>
+      <div class="pt">Resumes & Interviews</div>
+      <div class="pb">Self-reported skills and whiteboard performance correlate weakly with real-world engineering output. The best engineers often perform worst in traditional interview formats.</div>
+    </div>
+    <div class="pc good">
+      <div class="pi">⚙️</div>
+      <div class="pt">What POW Measures</div>
+      <div class="pb">Raw commit velocity. Project complexity depth. Contribution consistency over years. Real repository impact. Trajectory acceleration. All from publicly visible, tamper-evident GitHub activity — the actual record of work.</div>
+    </div>
   </div>
-  <h2 class="section-h2">Reputation is <span style="color:var(--rust)">broken</span></h2>
-  <p class="section-lead reveal">Every signal used to evaluate developers today is either manipulable, subjective, or simply irrelevant to engineering ability.</p>
-
-  <div class="problem-grid reveal">
-    <div class="problem-card bad">
-      <div class="problem-icon">⭐</div>
-      <div class="problem-title">GitHub Stars</div>
-      <div class="problem-body">Stars measure marketing, not engineering. A viral README with zero meaningful code can accumulate tens of thousands of stars. They say nothing about a developer's actual ability to build production systems.</div>
-    </div>
-    <div class="problem-card bad">
-      <div class="problem-icon">📱</div>
-      <div class="problem-title">Social Followers</div>
-      <div class="problem-body">Twitter/X, LinkedIn, and blog followings reward content creators, not code writers. The most prolific engineers are often the most invisible socially. Follower counts are gameable and decay rapidly.</div>
-    </div>
-    <div class="problem-card bad">
-      <div class="problem-icon">📄</div>
-      <div class="problem-title">Resumes & Interviews</div>
-      <div class="problem-body">Self-reported skills and whiteboard performance under artificial pressure correlate weakly with real-world engineering output. The best engineers often perform worst in traditional interview formats.</div>
-    </div>
-    <div class="problem-card good">
-      <div class="problem-icon">⚙️</div>
-      <div class="problem-title">What POW Measures</div>
-      <div class="problem-body">Raw commit velocity. Project complexity depth. Contribution consistency over years. Real repository impact. Trajectory acceleration. All derived from publicly visible, tamper-evident GitHub activity — the actual record of work.</div>
-    </div>
-  </div><!-- /.problem-grid -->
-</div><!-- /.section-inner -->
+</div>
 </section>
 
 <!-- 02 SOLUTION -->
-<section id="solution" class="pitch-section" style="background:var(--paper2)">
-<div class="section-inner">
-  <div class="section-eyebrow">
-    <span class="section-num">02</span>
-    <span class="section-rule"></span>
-    <span class="section-tag">The Solution</span>
-  </div>
-  <h2 class="section-h2">The execution <span style="color:var(--gold)">index</span></h2>
-
-  <div class="two-col reveal">
+<section id="solution" class="s">
+<div class="inner">
+  <div class="eye"><span class="eye-n">02</span><span class="eye-r"></span><span class="eye-t">The Solution</span></div>
+  <h2 class="h1">The execution <span class="g">index</span></h2>
+  <div class="g2 rev">
     <div>
-      <p class="section-lead">Code is one of the few professions where your complete work history is publicly visible. We use it.</p>
-      <p class="body-text">
-        POW is a <strong>developer performance intelligence platform</strong> that ingests public GitHub activity across millions of commits and thousands of repositories to produce a single, continuously updated Execution Score per developer.<br><br>
-        Unlike static profiles or self-reported credentials, the execution score is derived entirely from observable engineering behavior — what you actually commit, to what, how often, and how complex.<br><br>
-        The result is a <strong>global leaderboard</strong> ranked by real engineering output, filterable by country, city, and technology stack.
-      </p>
+      <p class="lead">Code is one of the few professions where your complete work history is publicly visible. We use it.</p>
+      <p class="bod">POW is a <strong>developer performance intelligence platform</strong> that ingests public GitHub activity across millions of commits to produce a single, continuously updated Execution Score per developer.<br><br>Unlike static profiles or self-reported credentials, the score is derived entirely from observable engineering behavior — what you commit, to what, how often, and how complex.<br><br>The result is a <strong>global leaderboard</strong> ranked by real engineering output, filterable by country, city, and technology stack.</p>
     </div>
     <div>
-      <div class="score-breakdown reveal">
-        <div style="font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--gold);margin-bottom:20px;text-transform:uppercase;">Execution Score Formula</div>
-        <div class="score-equation">
-          <div class="score-eq-part">
-            <span class="score-eq-val" style="color:#a78bfa;">V</span>
-            <span class="score-eq-label" style="color:rgba(245,242,235,0.35);">Velocity</span>
-          </div>
-          <span class="score-eq-op">+</span>
-          <div class="score-eq-part">
-            <span class="score-eq-val" style="color:#60a5fa;">C</span>
-            <span class="score-eq-label" style="color:rgba(245,242,235,0.35);">Complexity</span>
-          </div>
-          <span class="score-eq-op">+</span>
-          <div class="score-eq-part">
-            <span class="score-eq-val" style="color:#34d399;">K</span>
-            <span class="score-eq-label" style="color:rgba(245,242,235,0.35);">Consistency</span>
-          </div>
-          <span class="score-eq-op">+</span>
-          <div class="score-eq-part">
-            <span class="score-eq-val" style="color:var(--gold-light);">I</span>
-            <span class="score-eq-label" style="color:rgba(245,242,235,0.35);">Impact</span>
-          </div>
-          <span class="score-eq-op">+</span>
-          <div class="score-eq-part">
-            <span class="score-eq-val" style="color:#fb7185;">T</span>
-            <span class="score-eq-label" style="color:rgba(245,242,235,0.35);">Trajectory</span>
-          </div>
+      <div class="sbox">
+        <div style="font-family:var(--mono);font-size:7px;letter-spacing:3px;color:var(--gold);margin-bottom:16px;text-transform:uppercase;">Execution Score Formula</div>
+        <div class="seq">
+          <div class="eqp"><span class="eqv" style="color:#a78bfa;">V</span><span class="eql">Velocity</span></div>
+          <span class="eqo">+</span>
+          <div class="eqp"><span class="eqv" style="color:#60a5fa;">C</span><span class="eql">Complexity</span></div>
+          <span class="eqo">+</span>
+          <div class="eqp"><span class="eqv" style="color:#34d399;">K</span><span class="eql">Consistency</span></div>
+          <span class="eqo">+</span>
+          <div class="eqp"><span class="eqv" style="color:var(--gold-l);">I</span><span class="eql">Impact</span></div>
+          <span class="eqo">+</span>
+          <div class="eqp"><span class="eqv" style="color:#fb7185;">T</span><span class="eql">Trajectory</span></div>
         </div>
-        <div class="score-bars" id="scoreBars">
-          <div class="score-bar-item">
-            <div class="score-bar-head">
-              <span class="score-bar-name" style="color:#a78bfa;">Velocity</span>
-              <span class="score-bar-meta">20% weight</span>
-            </div>
-            <div class="score-bar-track"><div class="score-bar-fill" style="background:#a78bfa;" data-width="78"></div></div>
-            <div class="score-bar-desc">Commit frequency & volume within rolling time windows</div>
-          </div>
-          <div class="score-bar-item">
-            <div class="score-bar-head">
-              <span class="score-bar-name" style="color:#60a5fa;">Complexity</span>
-              <span class="score-bar-meta">25% weight</span>
-            </div>
-            <div class="score-bar-track"><div class="score-bar-fill" style="background:#60a5fa;" data-width="91"></div></div>
-            <div class="score-bar-desc">Multi-language architecture, file change breadth, structural depth</div>
-          </div>
-          <div class="score-bar-item">
-            <div class="score-bar-head">
-              <span class="score-bar-name" style="color:#34d399;">Consistency</span>
-              <span class="score-bar-meta">20% weight</span>
-            </div>
-            <div class="score-bar-track"><div class="score-bar-fill" style="background:#34d399;" data-width="65"></div></div>
-            <div class="score-bar-desc">Long-term streaks, temporal distribution, repository stability</div>
-          </div>
-          <div class="score-bar-item">
-            <div class="score-bar-head">
-              <span class="score-bar-name" style="color:var(--gold-light);">Impact</span>
-              <span class="score-bar-meta">25% weight</span>
-            </div>
-            <div class="score-bar-track"><div class="score-bar-fill" style="background:var(--gold-light);" data-width="84"></div></div>
-            <div class="score-bar-desc">Stars, forks, contributors, external dependency signals</div>
-          </div>
-          <div class="score-bar-item">
-            <div class="score-bar-head">
-              <span class="score-bar-name" style="color:#fb7185;">Trajectory</span>
-              <span class="score-bar-meta">10% weight</span>
-            </div>
-            <div class="score-bar-track"><div class="score-bar-fill" style="background:#fb7185;" data-width="53"></div></div>
-            <div class="score-bar-desc">Acceleration patterns across velocity and complexity over time</div>
-          </div>
+        <div class="sbars">
+          <div><div class="sbi-head"><span class="sbi-name" style="color:#a78bfa;">Velocity</span><span class="sbi-meta">20% weight</span></div><div class="sbi-track"><div class="sbi-fill" style="background:#a78bfa;" data-w="78"></div></div><div class="sbi-desc">Commit frequency & volume within rolling time windows</div></div>
+          <div><div class="sbi-head"><span class="sbi-name" style="color:#60a5fa;">Complexity</span><span class="sbi-meta">25% weight</span></div><div class="sbi-track"><div class="sbi-fill" style="background:#60a5fa;" data-w="91"></div></div><div class="sbi-desc">Multi-language architecture, file change breadth, structural depth</div></div>
+          <div><div class="sbi-head"><span class="sbi-name" style="color:#34d399;">Consistency</span><span class="sbi-meta">20% weight</span></div><div class="sbi-track"><div class="sbi-fill" style="background:#34d399;" data-w="65"></div></div><div class="sbi-desc">Long-term streaks, temporal distribution, repository stability</div></div>
+          <div><div class="sbi-head"><span class="sbi-name" style="color:var(--gold-l);">Impact</span><span class="sbi-meta">25% weight</span></div><div class="sbi-track"><div class="sbi-fill" style="background:var(--gold-l);" data-w="84"></div></div><div class="sbi-desc">Stars, forks, contributors, external dependency signals</div></div>
+          <div><div class="sbi-head"><span class="sbi-name" style="color:#fb7185;">Trajectory</span><span class="sbi-meta">10% weight</span></div><div class="sbi-track"><div class="sbi-fill" style="background:#fb7185;" data-w="53"></div></div><div class="sbi-desc">Acceleration patterns across velocity and complexity over time</div></div>
         </div>
       </div>
     </div>
-  </div><!-- /.two-col -->
-</div><!-- /.section-inner -->
+  </div>
+</div>
 </section>
 
 <!-- 03 SCORING ENGINE -->
-<section id="scoring" class="pitch-section">
-<div class="section-inner">
-  <div class="section-eyebrow">
-    <span class="section-num">03</span>
-    <span class="section-rule"></span>
-    <span class="section-tag">Scoring Engine</span>
-  </div>
-  <h2 class="section-h2">How the <span style="color:var(--gold)">score</span> is computed</h2>
-
-  <div class="two-col-wide reveal">
+<section id="scoring" class="s">
+<div class="inner">
+  <div class="eye"><span class="eye-n">03</span><span class="eye-r"></span><span class="eye-t">Scoring Engine</span></div>
+  <h2 class="h1">How the <span class="g">score</span> is computed</h2>
+  <div class="g2w rev">
     <div>
-      <p class="body-text">
-        The scoring engine is the analytical core of POW. After the ingestion pipeline collects raw GitHub data, the engine processes it through a <strong>five-component weighted model</strong> to produce a normalized 0–10,000 execution score.<br><br>
-        Each component draws from different subsets of the raw data. Velocity pulls from commit timestamps and additions/deletions counts. Complexity draws from repository language breakdowns, file tree depth, and structural entropy. Consistency uses the statistical distribution of commit timestamps over long windows. Impact aggregates repository graph signals. Trajectory fits a curve to the velocity and complexity time series to calculate acceleration.<br><br>
-        The components are <strong>normalized independently</strong> against the global developer population, then weighted and summed. This ensures that the score reflects percentile standing rather than absolute numbers, which vary wildly across developer types.
-      </p>
-
-      <div class="code-block">
-        <div class="code-header">
-          <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
-          <span class="code-filename">scoring-engine/calculate.ts</span>
-        </div>
-        <div class="code-body"><pre><span class="kw">interface</span> <span class="type">ScoringInput</span> {
-  commits:      <span class="type">Commit</span>[];
-  repositories: <span class="type">Repository</span>[];
-  techStacks:   <span class="type">TechStack</span>[];
-  windowDays:   <span class="num">90</span> | <span class="num">180</span> | <span class="num">365</span>;
+      <p class="bod">The scoring engine processes raw GitHub data through a <strong>five-component weighted model</strong> to produce a normalized 0–10,000 execution score. Each component draws from different data subsets. The components are <strong>normalized independently</strong> against the global developer population using PostgreSQL window functions, ensuring scores reflect percentile standing rather than absolute numbers.</p>
+      <div class="cb">
+        <div class="cb-hdr"><div class="dots"><div class="d"></div><div class="d"></div><div class="d"></div></div><span class="cb-fn">scoring-engine/calculate.ts</span></div>
+        <div class="cb-body"><pre><span class="kw">interface</span> <span class="ty">ScoringInput</span> {
+  commits:      <span class="ty">Commit</span>[];
+  repositories: <span class="ty">Repository</span>[];
+  windowDays:   <span class="nu">90</span> | <span class="nu">180</span> | <span class="nu">365</span>;
 }
 
 <span class="kw">async function</span> <span class="fn">calculateExecutionScore</span>(
-  input: <span class="type">ScoringInput</span>
-): <span class="type">Promise</span>&lt;<span class="type">ExecutionScore</span>&gt; {
+  input: <span class="ty">ScoringInput</span>
+): <span class="ty">Promise</span>&lt;<span class="ty">ExecutionScore</span>&gt; {
 
   <span class="kw">const</span> velocity    = <span class="kw">await</span> <span class="fn">scoreVelocity</span>(input.commits, input.windowDays);
-  <span class="kw">const</span> complexity  = <span class="kw">await</span> <span class="fn">scoreComplexity</span>(input.repositories, input.techStacks);
+  <span class="kw">const</span> complexity  = <span class="kw">await</span> <span class="fn">scoreComplexity</span>(input.repositories);
   <span class="kw">const</span> consistency = <span class="kw">await</span> <span class="fn">scoreConsistency</span>(input.commits);
   <span class="kw">const</span> impact      = <span class="kw">await</span> <span class="fn">scoreImpact</span>(input.repositories);
   <span class="kw">const</span> trajectory  = <span class="kw">await</span> <span class="fn">scoreTrajectory</span>(input.commits, velocity);
 
   <span class="cm">// Normalize each component against global population</span>
-  <span class="kw">const</span> [nV, nC, nK, nI, nT] = <span class="kw">await</span> <span class="type">Promise</span>.<span class="fn">all</span>([
-    <span class="fn">normalize</span>(velocity,    <span class="str">'velocity'</span>),
-    <span class="fn">normalize</span>(complexity,  <span class="str">'complexity'</span>),
-    <span class="fn">normalize</span>(consistency, <span class="str">'consistency'</span>),
-    <span class="fn">normalize</span>(impact,      <span class="str">'impact'</span>),
-    <span class="fn">normalize</span>(trajectory,  <span class="str">'trajectory'</span>),
+  <span class="kw">const</span> [nV, nC, nK, nI, nT] = <span class="kw">await</span> <span class="ty">Promise</span>.<span class="fn">all</span>([
+    <span class="fn">normalize</span>(velocity,    <span class="st">'velocity'</span>),
+    <span class="fn">normalize</span>(complexity,  <span class="st">'complexity'</span>),
+    <span class="fn">normalize</span>(consistency, <span class="st">'consistency'</span>),
+    <span class="fn">normalize</span>(impact,      <span class="st">'impact'</span>),
+    <span class="fn">normalize</span>(trajectory,  <span class="st">'trajectory'</span>),
   ]);
 
-  <span class="cm">// Weighted sum → 0 to 10,000 score</span>
-  <span class="kw">const</span> raw = (nV * <span class="num">0.20</span>) + (nC * <span class="num">0.25</span>) + (nK * <span class="num">0.20</span>)
-            + (nI * <span class="num">0.25</span>) + (nT * <span class="num">0.10</span>);
+  <span class="cm">// Weighted sum → 0 to 10,000</span>
+  <span class="kw">const</span> raw = (nV*<span class="nu">.20</span>) + (nC*<span class="nu">.25</span>) + (nK*<span class="nu">.20</span>)
+            + (nI*<span class="nu">.25</span>) + (nT*<span class="nu">.10</span>);
 
   <span class="kw">return</span> {
-    executionScore: <span class="type">Math</span>.<span class="fn">round</span>(raw * <span class="num">10000</span>),
-    velocityScore:    <span class="type">Math</span>.<span class="fn">round</span>(nV * <span class="num">10000</span>),
-    complexityScore:  <span class="type">Math</span>.<span class="fn">round</span>(nC * <span class="num">10000</span>),
-    consistencyScore: <span class="type">Math</span>.<span class="fn">round</span>(nK * <span class="num">10000</span>),
-    impactScore:      <span class="type">Math</span>.<span class="fn">round</span>(nI * <span class="num">10000</span>),
-    trajectoryScore:  <span class="type">Math</span>.<span class="fn">round</span>(nT * <span class="num">10000</span>),
-    computedAt:       <span class="kw">new</span> <span class="type">Date</span>(),
+    executionScore: <span class="ty">Math</span>.<span class="fn">round</span>(raw * <span class="nu">10000</span>),
+    computedAt:     <span class="kw">new</span> <span class="ty">Date</span>(),
   };
 }</pre></div>
       </div>
     </div>
-
     <div>
-      <p class="body-text">
-        <strong>Score update cadence:</strong> Scores are recomputed whenever the ingestion pipeline detects new commit activity. High-activity developers (100+ commits/month) get near-real-time updates via priority queue. Lower-activity developers are batched.<br><br>
-        <strong>Normalization strategy:</strong> Each sub-score is normalized using a percentile rank against the full developer population using PostgreSQL window functions. This makes the score relative and immune to absolute metric inflation over time.
-      </p>
-
-      <div class="code-block" style="margin-top:24px;">
-        <div class="code-header">
-          <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
-          <span class="code-filename">scoring-engine/normalize.sql</span>
-        </div>
-        <div class="code-body"><pre><span class="cm">-- Compute percentile rank for velocity normalization</span>
+      <p class="bod"><strong>Score update cadence:</strong> Scores are recomputed whenever the ingestion pipeline detects new commit activity. High-activity developers get near-real-time updates via priority queue.<br><br><strong>Normalization strategy:</strong> Each sub-score is normalized using a percentile rank against the full developer population using PostgreSQL window functions.</p>
+      <div class="cb">
+        <div class="cb-hdr"><div class="dots"><div class="d"></div><div class="d"></div><div class="d"></div></div><span class="cb-fn">normalize.sql</span></div>
+        <div class="cb-body"><pre><span class="cm">-- Percentile rank for velocity</span>
 <span class="kw">SELECT</span>
   developer_id,
-  velocity_raw,
   <span class="fn">PERCENT_RANK</span>() <span class="kw">OVER</span> (
     <span class="kw">ORDER BY</span> velocity_raw <span class="kw">ASC</span>
-  ) <span class="kw">AS</span> <span class="gold-t">velocity_percentile</span>
+  ) <span class="kw">AS</span> <span class="gl">velocity_pct</span>
 <span class="kw">FROM</span> developer_scores
 <span class="kw">WHERE</span> is_bot = <span class="kw">FALSE</span>
-  <span class="kw">AND</span> gaming_flag = <span class="kw">FALSE</span>
-  <span class="kw">AND</span> total_commits &gt; <span class="num">10</span>;
+  <span class="kw">AND</span> gaming_flag = <span class="kw">FALSE</span>;
 
-<span class="cm">-- Update execution_score atomically</span>
+<span class="cm">-- Update scores atomically</span>
 <span class="kw">UPDATE</span> developers
 <span class="kw">SET</span>
-  execution_score  = <span class="gold-t">:score</span>,
-  velocity_score   = <span class="gold-t">:v</span>,
-  complexity_score = <span class="gold-t">:c</span>,
-  global_rank      = <span class="fn">RANK</span>() <span class="kw">OVER</span> (
-                       <span class="kw">ORDER BY</span> execution_score <span class="kw">DESC</span>
-                     ),
+  execution_score = <span class="gl">:score</span>,
+  global_rank = <span class="fn">RANK</span>() <span class="kw">OVER</span> (
+    <span class="kw">ORDER BY</span> execution_score <span class="kw">DESC</span>
+  ),
   score_updated_at = <span class="fn">NOW</span>()
-<span class="kw">WHERE</span> id = <span class="gold-t">:developer_id</span>;</pre></div>
+<span class="kw">WHERE</span> id = <span class="gl">:developer_id</span>;</pre></div>
       </div>
     </div>
-  </div><!-- /.two-col-wide -->
-</div><!-- /.section-inner -->
+  </div>
+</div>
 </section>
 
 <!-- 04 DATABASE -->
-<section id="database" class="pitch-section" style="background:var(--paper2)">
-<div class="section-inner">
-  <div class="section-eyebrow">
-    <span class="section-num">04</span>
-    <span class="section-rule"></span>
-    <span class="section-tag">Database Schema</span>
-  </div>
-  <h2 class="section-h2">Relational <span style="color:var(--gold)">data model</span></h2>
-  <p class="section-lead reveal">PostgreSQL as the primary store. Seven core tables. Designed for both analytical queries and fast leaderboard reads.</p>
+<section id="database" class="s">
+<div class="inner">
+  <div class="eye"><span class="eye-n">04</span><span class="eye-r"></span><span class="eye-t">Database Schema</span></div>
+  <h2 class="h1">Relational <span class="g">data model</span></h2>
+  <p class="lead rev">PostgreSQL as the primary store. Seven core tables. Designed for analytical queries and fast leaderboard reads.</p>
 
-  <!-- TABLE: developers -->
-  <div class="table-schema reveal">
-    <div class="table-name">
-      developers
-      <span class="table-name-tag">PRIMARY TABLE</span>
-    </div>
-    <div class="schema-scroll"><div class="schema-grid">
-      <div class="schema-head">
-        <div class="schema-head-cell">Column</div>
-        <div class="schema-head-cell">Type</div>
-        <div class="schema-head-cell">Key</div>
-        <div class="schema-head-cell">Description</div>
-      </div>
-      <div class="schema-row"><div class="schema-cell col-name">id</div><div class="schema-cell col-type">UUID</div><div class="schema-cell"><span class="col-pk">PK</span></div><div class="schema-cell col-desc">Primary key, generated v4 UUID</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">github_username</div><div class="schema-cell col-type">VARCHAR(39)</div><div class="schema-cell"><span class="col-idx">UNQ</span></div><div class="schema-cell col-desc">Unique GitHub login handle</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">github_id</div><div class="schema-cell col-type">BIGINT</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">GitHub's internal numeric user ID</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">display_name</div><div class="schema-cell col-type">VARCHAR(255)</div><div class="schema-cell"></div><div class="schema-cell col-desc">GitHub display name, nullable</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">avatar_url</div><div class="schema-cell col-type">TEXT</div><div class="schema-cell"></div><div class="schema-cell col-desc">GitHub avatar CDN URL</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">location</div><div class="schema-cell col-type">VARCHAR(255)</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">Free-text location from GitHub profile</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">country_code</div><div class="schema-cell col-type">CHAR(2)</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">ISO 3166-1 alpha-2, geo-parsed from location</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">city</div><div class="schema-cell col-type">VARCHAR(100)</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">Parsed city for geographic leaderboard</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">public_repos_count</div><div class="schema-cell col-type">INTEGER</div><div class="schema-cell"></div><div class="schema-cell col-desc">Total public repositories at last sync</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">followers_count</div><div class="schema-cell col-type">INTEGER</div><div class="schema-cell"></div><div class="schema-cell col-desc">GitHub followers (stored, not weighted)</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">github_created_at</div><div class="schema-cell col-type">TIMESTAMPTZ</div><div class="schema-cell"></div><div class="schema-cell col-desc">Account creation date on GitHub</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">execution_score</div><div class="schema-cell col-type">INTEGER</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">Composite execution score 0–10,000</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">velocity_score</div><div class="schema-cell col-type">INTEGER</div><div class="schema-cell"></div><div class="schema-cell col-desc">Velocity component 0–10,000</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">complexity_score</div><div class="schema-cell col-type">INTEGER</div><div class="schema-cell"></div><div class="schema-cell col-desc">Complexity component 0–10,000</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">consistency_score</div><div class="schema-cell col-type">INTEGER</div><div class="schema-cell"></div><div class="schema-cell col-desc">Consistency component 0–10,000</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">impact_score</div><div class="schema-cell col-type">INTEGER</div><div class="schema-cell"></div><div class="schema-cell col-desc">Impact component 0–10,000</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">trajectory_score</div><div class="schema-cell col-type">INTEGER</div><div class="schema-cell"></div><div class="schema-cell col-desc">Trajectory component 0–10,000</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">global_rank</div><div class="schema-cell col-type">INTEGER</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">Absolute global ranking position</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">is_bot</div><div class="schema-cell col-type">BOOLEAN</div><div class="schema-cell"></div><div class="schema-cell col-desc">Flagged as automated bot account</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">gaming_flag</div><div class="schema-cell col-type">BOOLEAN</div><div class="schema-cell"></div><div class="schema-cell col-desc">Anti-gaming detection trigger</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">last_synced_at</div><div class="schema-cell col-type">TIMESTAMPTZ</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">Most recent successful GitHub data sync</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">score_updated_at</div><div class="schema-cell col-type">TIMESTAMPTZ</div><div class="schema-cell"></div><div class="schema-cell col-desc">Timestamp of last score recalculation</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">created_at</div><div class="schema-cell col-type">TIMESTAMPTZ</div><div class="schema-cell"></div><div class="schema-cell col-desc">Record insertion timestamp</div></div>
+  <div class="ts rev">
+    <div class="ts-name">developers <span class="ts-tag">PRIMARY TABLE</span></div>
+    <div class="ts-scroll"><div class="sg">
+      <div class="sh"><div class="shc">Column</div><div class="shc">Type</div><div class="shc">Key</div><div class="shc">Description</div></div>
+      <div class="sr"><div class="sc cn">id</div><div class="sc ct">UUID</div><div class="sc"><span class="pk">PK</span></div><div class="sc cd">Primary key, generated v4 UUID</div></div>
+      <div class="sr"><div class="sc cn">github_username</div><div class="sc ct">VARCHAR(39)</div><div class="sc"><span class="ix">UNQ</span></div><div class="sc cd">Unique GitHub login handle</div></div>
+      <div class="sr"><div class="sc cn">github_id</div><div class="sc ct">BIGINT</div><div class="sc"><span class="ix">IDX</span></div><div class="sc cd">GitHub's internal numeric user ID</div></div>
+      <div class="sr"><div class="sc cn">display_name</div><div class="sc ct">VARCHAR(255)</div><div class="sc"></div><div class="sc cd">GitHub display name, nullable</div></div>
+      <div class="sr"><div class="sc cn">country_code</div><div class="sc ct">CHAR(2)</div><div class="sc"><span class="ix">IDX</span></div><div class="sc cd">ISO 3166-1 alpha-2, geo-parsed from location</div></div>
+      <div class="sr"><div class="sc cn">city</div><div class="sc ct">VARCHAR(100)</div><div class="sc"><span class="ix">IDX</span></div><div class="sc cd">Parsed city for geographic leaderboard</div></div>
+      <div class="sr"><div class="sc cn">execution_score</div><div class="sc ct">INTEGER</div><div class="sc"><span class="ix">IDX</span></div><div class="sc cd">Composite execution score 0–10,000</div></div>
+      <div class="sr"><div class="sc cn">velocity_score</div><div class="sc ct">INTEGER</div><div class="sc"></div><div class="sc cd">Velocity component 0–10,000</div></div>
+      <div class="sr"><div class="sc cn">complexity_score</div><div class="sc ct">INTEGER</div><div class="sc"></div><div class="sc cd">Complexity component 0–10,000</div></div>
+      <div class="sr"><div class="sc cn">consistency_score</div><div class="sc ct">INTEGER</div><div class="sc"></div><div class="sc cd">Consistency component 0–10,000</div></div>
+      <div class="sr"><div class="sc cn">impact_score</div><div class="sc ct">INTEGER</div><div class="sc"></div><div class="sc cd">Impact component 0–10,000</div></div>
+      <div class="sr"><div class="sc cn">trajectory_score</div><div class="sc ct">INTEGER</div><div class="sc"></div><div class="sc cd">Trajectory component 0–10,000</div></div>
+      <div class="sr"><div class="sc cn">global_rank</div><div class="sc ct">INTEGER</div><div class="sc"><span class="ix">IDX</span></div><div class="sc cd">Absolute global ranking position</div></div>
+      <div class="sr"><div class="sc cn">is_bot</div><div class="sc ct">BOOLEAN</div><div class="sc"></div><div class="sc cd">Flagged as automated bot account</div></div>
+      <div class="sr"><div class="sc cn">gaming_flag</div><div class="sc ct">BOOLEAN</div><div class="sc"></div><div class="sc cd">Anti-gaming detection trigger</div></div>
+      <div class="sr"><div class="sc cn">last_synced_at</div><div class="sc ct">TIMESTAMPTZ</div><div class="sc"><span class="ix">IDX</span></div><div class="sc cd">Most recent successful GitHub data sync</div></div>
+      <div class="sr"><div class="sc cn">created_at</div><div class="sc ct">TIMESTAMPTZ</div><div class="sc"></div><div class="sc cd">Record insertion timestamp</div></div>
     </div></div>
   </div>
 
-  <!-- TABLE: repositories -->
-  <div class="table-schema reveal">
-    <div class="table-name">
-      repositories
-      <span class="table-name-tag">REPO METADATA</span>
-    </div>
-    <div class="schema-scroll"><div class="schema-grid">
-      <div class="schema-head">
-        <div class="schema-head-cell">Column</div>
-        <div class="schema-head-cell">Type</div>
-        <div class="schema-head-cell">Key</div>
-        <div class="schema-head-cell">Description</div>
-      </div>
-      <div class="schema-row"><div class="schema-cell col-name">id</div><div class="schema-cell col-type">UUID</div><div class="schema-cell"><span class="col-pk">PK</span></div><div class="schema-cell col-desc">Primary key</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">github_repo_id</div><div class="schema-cell col-type">BIGINT</div><div class="schema-cell"><span class="col-idx">UNQ</span></div><div class="schema-cell col-desc">GitHub's internal repository ID</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">developer_id</div><div class="schema-cell col-type">UUID</div><div class="schema-cell"><span class="col-fk">FK</span></div><div class="schema-cell col-desc">References developers.id</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">name</div><div class="schema-cell col-type">VARCHAR(255)</div><div class="schema-cell"></div><div class="schema-cell col-desc">Repository name slug</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">full_name</div><div class="schema-cell col-type">VARCHAR(512)</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">owner/repo full path on GitHub</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">primary_language</div><div class="schema-cell col-type">VARCHAR(100)</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">GitHub-detected primary language</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">language_bytes</div><div class="schema-cell col-type">JSONB</div><div class="schema-cell"></div><div class="schema-cell col-desc">{"TypeScript":48000,"CSS":3200,...} byte breakdown</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">stars_count</div><div class="schema-cell col-type">INTEGER</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">GitHub stargazers count</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">forks_count</div><div class="schema-cell col-type">INTEGER</div><div class="schema-cell"></div><div class="schema-cell col-desc">Total forks</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">size_kb</div><div class="schema-cell col-type">INTEGER</div><div class="schema-cell"></div><div class="schema-cell col-desc">Repository size in kilobytes</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">is_fork</div><div class="schema-cell col-type">BOOLEAN</div><div class="schema-cell"></div><div class="schema-cell col-desc">Whether this is a forked repository</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">is_archived</div><div class="schema-cell col-type">BOOLEAN</div><div class="schema-cell"></div><div class="schema-cell col-desc">Archived repos weighted lower</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">open_issues_count</div><div class="schema-cell col-type">INTEGER</div><div class="schema-cell"></div><div class="schema-cell col-desc">Active issue count (impact signal)</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">contributors_count</div><div class="schema-cell col-type">INTEGER</div><div class="schema-cell"></div><div class="schema-cell col-desc">Distinct contributors (impact signal)</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">last_commit_at</div><div class="schema-cell col-type">TIMESTAMPTZ</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">Most recent commit timestamp</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">github_created_at</div><div class="schema-cell col-type">TIMESTAMPTZ</div><div class="schema-cell"></div><div class="schema-cell col-desc">Repository creation date</div></div>
+  <div class="ts rev">
+    <div class="ts-name">repositories <span class="ts-tag">REPO METADATA</span></div>
+    <div class="ts-scroll"><div class="sg">
+      <div class="sh"><div class="shc">Column</div><div class="shc">Type</div><div class="shc">Key</div><div class="shc">Description</div></div>
+      <div class="sr"><div class="sc cn">id</div><div class="sc ct">UUID</div><div class="sc"><span class="pk">PK</span></div><div class="sc cd">Primary key</div></div>
+      <div class="sr"><div class="sc cn">developer_id</div><div class="sc ct">UUID</div><div class="sc"><span class="fk">FK</span></div><div class="sc cd">References developers.id</div></div>
+      <div class="sr"><div class="sc cn">github_repo_id</div><div class="sc ct">BIGINT</div><div class="sc"><span class="ix">UNQ</span></div><div class="sc cd">GitHub's internal repository ID</div></div>
+      <div class="sr"><div class="sc cn">full_name</div><div class="sc ct">VARCHAR(512)</div><div class="sc"><span class="ix">IDX</span></div><div class="sc cd">owner/repo full path on GitHub</div></div>
+      <div class="sr"><div class="sc cn">primary_language</div><div class="sc ct">VARCHAR(100)</div><div class="sc"><span class="ix">IDX</span></div><div class="sc cd">GitHub-detected primary language</div></div>
+      <div class="sr"><div class="sc cn">language_bytes</div><div class="sc ct">JSONB</div><div class="sc"></div><div class="sc cd">{"TypeScript":48000,...} byte breakdown</div></div>
+      <div class="sr"><div class="sc cn">stars_count</div><div class="sc ct">INTEGER</div><div class="sc"><span class="ix">IDX</span></div><div class="sc cd">GitHub stargazers count</div></div>
+      <div class="sr"><div class="sc cn">forks_count</div><div class="sc ct">INTEGER</div><div class="sc"></div><div class="sc cd">Total forks</div></div>
+      <div class="sr"><div class="sc cn">contributors_count</div><div class="sc ct">INTEGER</div><div class="sc"></div><div class="sc cd">Distinct contributors (impact signal)</div></div>
+      <div class="sr"><div class="sc cn">is_fork</div><div class="sc ct">BOOLEAN</div><div class="sc"></div><div class="sc cd">Whether this is a forked repository</div></div>
+      <div class="sr"><div class="sc cn">last_commit_at</div><div class="sc ct">TIMESTAMPTZ</div><div class="sc"><span class="ix">IDX</span></div><div class="sc cd">Most recent commit timestamp</div></div>
     </div></div>
   </div>
 
-  <!-- TABLE: commits -->
-  <div class="table-schema reveal">
-    <div class="table-name">
-      commits
-      <span class="table-name-tag">HIGH-VOLUME TABLE · PARTITIONED BY MONTH</span>
-    </div>
-    <div class="schema-scroll"><div class="schema-grid">
-      <div class="schema-head">
-        <div class="schema-head-cell">Column</div>
-        <div class="schema-head-cell">Type</div>
-        <div class="schema-head-cell">Key</div>
-        <div class="schema-head-cell">Description</div>
-      </div>
-      <div class="schema-row"><div class="schema-cell col-name">id</div><div class="schema-cell col-type">UUID</div><div class="schema-cell"><span class="col-pk">PK</span></div><div class="schema-cell col-desc">Primary key</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">sha</div><div class="schema-cell col-type">CHAR(40)</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">Git commit SHA hash</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">developer_id</div><div class="schema-cell col-type">UUID</div><div class="schema-cell"><span class="col-fk">FK</span></div><div class="schema-cell col-desc">References developers.id</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">repository_id</div><div class="schema-cell col-type">UUID</div><div class="schema-cell"><span class="col-fk">FK</span></div><div class="schema-cell col-desc">References repositories.id</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">message</div><div class="schema-cell col-type">TEXT</div><div class="schema-cell"></div><div class="schema-cell col-desc">Commit message (first 500 chars)</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">additions</div><div class="schema-cell col-type">INTEGER</div><div class="schema-cell"></div><div class="schema-cell col-desc">Lines added in this commit</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">deletions</div><div class="schema-cell col-type">INTEGER</div><div class="schema-cell"></div><div class="schema-cell col-desc">Lines deleted in this commit</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">files_changed</div><div class="schema-cell col-type">INTEGER</div><div class="schema-cell"></div><div class="schema-cell col-desc">File count changed in this commit</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">committed_at</div><div class="schema-cell col-type">TIMESTAMPTZ</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">Git commit timestamp — partition key</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">is_merge_commit</div><div class="schema-cell col-type">BOOLEAN</div><div class="schema-cell"></div><div class="schema-cell col-desc">Merge commits weighted differently</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">gaming_score</div><div class="schema-cell col-type">SMALLINT</div><div class="schema-cell"></div><div class="schema-cell col-desc">0–100 likelihood this is spam (anti-gaming)</div></div>
+  <div class="ts rev">
+    <div class="ts-name">commits <span class="ts-tag">HIGH-VOLUME · PARTITIONED BY MONTH</span></div>
+    <div class="ts-scroll"><div class="sg">
+      <div class="sh"><div class="shc">Column</div><div class="shc">Type</div><div class="shc">Key</div><div class="shc">Description</div></div>
+      <div class="sr"><div class="sc cn">id</div><div class="sc ct">UUID</div><div class="sc"><span class="pk">PK</span></div><div class="sc cd">Primary key</div></div>
+      <div class="sr"><div class="sc cn">sha</div><div class="sc ct">CHAR(40)</div><div class="sc"><span class="ix">IDX</span></div><div class="sc cd">Git commit SHA hash</div></div>
+      <div class="sr"><div class="sc cn">developer_id</div><div class="sc ct">UUID</div><div class="sc"><span class="fk">FK</span></div><div class="sc cd">References developers.id</div></div>
+      <div class="sr"><div class="sc cn">repository_id</div><div class="sc ct">UUID</div><div class="sc"><span class="fk">FK</span></div><div class="sc cd">References repositories.id</div></div>
+      <div class="sr"><div class="sc cn">additions</div><div class="sc ct">INTEGER</div><div class="sc"></div><div class="sc cd">Lines added in this commit</div></div>
+      <div class="sr"><div class="sc cn">deletions</div><div class="sc ct">INTEGER</div><div class="sc"></div><div class="sc cd">Lines deleted in this commit</div></div>
+      <div class="sr"><div class="sc cn">files_changed</div><div class="sc ct">INTEGER</div><div class="sc"></div><div class="sc cd">File count changed in this commit</div></div>
+      <div class="sr"><div class="sc cn">committed_at</div><div class="sc ct">TIMESTAMPTZ</div><div class="sc"><span class="ix">IDX</span></div><div class="sc cd">Commit timestamp — partition key</div></div>
+      <div class="sr"><div class="sc cn">is_merge_commit</div><div class="sc ct">BOOLEAN</div><div class="sc"></div><div class="sc cd">Merge commits weighted differently</div></div>
+      <div class="sr"><div class="sc cn">gaming_score</div><div class="sc ct">SMALLINT</div><div class="sc"></div><div class="sc cd">0–100 likelihood this is spam</div></div>
     </div></div>
   </div>
 
-  <!-- TABLE: tech_stacks -->
-  <div class="table-schema reveal">
-    <div class="table-name">
-      tech_stacks
-      <span class="table-name-tag">TECHNOLOGY TAXONOMY</span>
-    </div>
-    <div class="schema-scroll"><div class="schema-grid">
-      <div class="schema-head">
-        <div class="schema-head-cell">Column</div>
-        <div class="schema-head-cell">Type</div>
-        <div class="schema-head-cell">Key</div>
-        <div class="schema-head-cell">Description</div>
-      </div>
-      <div class="schema-row"><div class="schema-cell col-name">id</div><div class="schema-cell col-type">UUID</div><div class="schema-cell"><span class="col-pk">PK</span></div><div class="schema-cell col-desc">Primary key</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">name</div><div class="schema-cell col-type">VARCHAR(100)</div><div class="schema-cell"><span class="col-idx">UNQ</span></div><div class="schema-cell col-desc">e.g. "TypeScript", "Rust", "Python"</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">category</div><div class="schema-cell col-type">VARCHAR(50)</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">language / framework / infra / ml</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">ecosystem</div><div class="schema-cell col-type">VARCHAR(50)</div><div class="schema-cell"></div><div class="schema-cell col-desc">web / systems / ml / mobile / devops</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">color_hex</div><div class="schema-cell col-type">CHAR(7)</div><div class="schema-cell"></div><div class="schema-cell col-desc">Display color for UI</div></div>
+  <div class="ts rev">
+    <div class="ts-name">tech_stacks <span class="ts-tag">TECHNOLOGY TAXONOMY</span></div>
+    <div class="ts-scroll"><div class="sg">
+      <div class="sh"><div class="shc">Column</div><div class="shc">Type</div><div class="shc">Key</div><div class="shc">Description</div></div>
+      <div class="sr"><div class="sc cn">id</div><div class="sc ct">UUID</div><div class="sc"><span class="pk">PK</span></div><div class="sc cd">Primary key</div></div>
+      <div class="sr"><div class="sc cn">name</div><div class="sc ct">VARCHAR(100)</div><div class="sc"><span class="ix">UNQ</span></div><div class="sc cd">e.g. "TypeScript", "Rust", "Python"</div></div>
+      <div class="sr"><div class="sc cn">category</div><div class="sc ct">VARCHAR(50)</div><div class="sc"><span class="ix">IDX</span></div><div class="sc cd">language / framework / infra / ml</div></div>
+      <div class="sr"><div class="sc cn">ecosystem</div><div class="sc ct">VARCHAR(50)</div><div class="sc"></div><div class="sc cd">web / systems / ml / mobile / devops</div></div>
+      <div class="sr"><div class="sc cn">color_hex</div><div class="sc ct">CHAR(7)</div><div class="sc"></div><div class="sc cd">Display color for UI badge</div></div>
     </div></div>
   </div>
 
-  <!-- TABLE: developer_tech_stacks (join) -->
-  <div class="table-schema reveal">
-    <div class="table-name">
-      developer_tech_stacks
-      <span class="table-name-tag">JOIN TABLE · MANY-TO-MANY</span>
-    </div>
-    <div class="schema-scroll"><div class="schema-grid">
-      <div class="schema-head">
-        <div class="schema-head-cell">Column</div>
-        <div class="schema-head-cell">Type</div>
-        <div class="schema-head-cell">Key</div>
-        <div class="schema-head-cell">Description</div>
-      </div>
-      <div class="schema-row"><div class="schema-cell col-name">developer_id</div><div class="schema-cell col-type">UUID</div><div class="schema-cell"><span class="col-fk">FK</span></div><div class="schema-cell col-desc">References developers.id</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">tech_stack_id</div><div class="schema-cell col-type">UUID</div><div class="schema-cell"><span class="col-fk">FK</span></div><div class="schema-cell col-desc">References tech_stacks.id</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">weight</div><div class="schema-cell col-type">DECIMAL(5,4)</div><div class="schema-cell"></div><div class="schema-cell col-desc">Specialization weight 0.0–1.0 (bytes ratio)</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">repo_count</div><div class="schema-cell col-type">INTEGER</div><div class="schema-cell"></div><div class="schema-cell col-desc">Number of repos using this stack</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">stack_rank</div><div class="schema-cell col-type">INTEGER</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">Rank in technology-specific leaderboard</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">updated_at</div><div class="schema-cell col-type">TIMESTAMPTZ</div><div class="schema-cell"></div><div class="schema-cell col-desc">Last recalculated</div></div>
+  <div class="ts rev">
+    <div class="ts-name">developer_tech_stacks <span class="ts-tag">JOIN TABLE · MANY-TO-MANY</span></div>
+    <div class="ts-scroll"><div class="sg">
+      <div class="sh"><div class="shc">Column</div><div class="shc">Type</div><div class="shc">Key</div><div class="shc">Description</div></div>
+      <div class="sr"><div class="sc cn">developer_id</div><div class="sc ct">UUID</div><div class="sc"><span class="fk">FK</span></div><div class="sc cd">References developers.id</div></div>
+      <div class="sr"><div class="sc cn">tech_stack_id</div><div class="sc ct">UUID</div><div class="sc"><span class="fk">FK</span></div><div class="sc cd">References tech_stacks.id</div></div>
+      <div class="sr"><div class="sc cn">weight</div><div class="sc ct">DECIMAL(5,4)</div><div class="sc"></div><div class="sc cd">Specialization weight 0.0–1.0 (bytes ratio)</div></div>
+      <div class="sr"><div class="sc cn">stack_rank</div><div class="sc ct">INTEGER</div><div class="sc"><span class="ix">IDX</span></div><div class="sc cd">Rank in technology-specific leaderboard</div></div>
     </div></div>
   </div>
 
-  <!-- TABLE: sync_jobs -->
-  <div class="table-schema reveal">
-    <div class="table-name">
-      sync_jobs
-      <span class="table-name-tag">INGESTION QUEUE STATE</span>
-    </div>
-    <div class="schema-scroll"><div class="schema-grid">
-      <div class="schema-head">
-        <div class="schema-head-cell">Column</div>
-        <div class="schema-head-cell">Type</div>
-        <div class="schema-head-cell">Key</div>
-        <div class="schema-head-cell">Description</div>
-      </div>
-      <div class="schema-row"><div class="schema-cell col-name">id</div><div class="schema-cell col-type">UUID</div><div class="schema-cell"><span class="col-pk">PK</span></div><div class="schema-cell col-desc">Primary key</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">developer_id</div><div class="schema-cell col-type">UUID</div><div class="schema-cell"><span class="col-fk">FK</span></div><div class="schema-cell col-desc">References developers.id</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">status</div><div class="schema-cell col-type">VARCHAR(20)</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">pending / running / complete / failed</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">priority</div><div class="schema-cell col-type">SMALLINT</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">1=high 5=low, determines queue order</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">job_type</div><div class="schema-cell col-type">VARCHAR(50)</div><div class="schema-cell"></div><div class="schema-cell col-desc">full_sync / delta_sync / score_only</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">started_at</div><div class="schema-cell col-type">TIMESTAMPTZ</div><div class="schema-cell"></div><div class="schema-cell col-desc">Worker pickup time</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">completed_at</div><div class="schema-cell col-type">TIMESTAMPTZ</div><div class="schema-cell"></div><div class="schema-cell col-desc">Completion timestamp</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">error_message</div><div class="schema-cell col-type">TEXT</div><div class="schema-cell"></div><div class="schema-cell col-desc">Error detail on failure</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">retry_count</div><div class="schema-cell col-type">SMALLINT</div><div class="schema-cell"></div><div class="schema-cell col-desc">Number of retry attempts (max 3)</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">github_rate_limit_reset</div><div class="schema-cell col-type">TIMESTAMPTZ</div><div class="schema-cell"></div><div class="schema-cell col-desc">When to retry if rate limited</div></div>
+  <div class="ts rev">
+    <div class="ts-name">sync_jobs <span class="ts-tag">INGESTION QUEUE STATE</span></div>
+    <div class="ts-scroll"><div class="sg">
+      <div class="sh"><div class="shc">Column</div><div class="shc">Type</div><div class="shc">Key</div><div class="shc">Description</div></div>
+      <div class="sr"><div class="sc cn">id</div><div class="sc ct">UUID</div><div class="sc"><span class="pk">PK</span></div><div class="sc cd">Primary key</div></div>
+      <div class="sr"><div class="sc cn">developer_id</div><div class="sc ct">UUID</div><div class="sc"><span class="fk">FK</span></div><div class="sc cd">References developers.id</div></div>
+      <div class="sr"><div class="sc cn">status</div><div class="sc ct">VARCHAR(20)</div><div class="sc"><span class="ix">IDX</span></div><div class="sc cd">pending / running / complete / failed</div></div>
+      <div class="sr"><div class="sc cn">priority</div><div class="sc ct">SMALLINT</div><div class="sc"><span class="ix">IDX</span></div><div class="sc cd">1=high 5=low, determines queue order</div></div>
+      <div class="sr"><div class="sc cn">job_type</div><div class="sc ct">VARCHAR(50)</div><div class="sc"></div><div class="sc cd">full_sync / delta_sync / score_only</div></div>
+      <div class="sr"><div class="sc cn">retry_count</div><div class="sc ct">SMALLINT</div><div class="sc"></div><div class="sc cd">Number of retry attempts (max 3)</div></div>
+      <div class="sr"><div class="sc cn">error_message</div><div class="sc ct">TEXT</div><div class="sc"></div><div class="sc cd">Error detail on failure</div></div>
     </div></div>
   </div>
 
-  <!-- TABLE: leaderboard_cache -->
-  <div class="table-schema reveal">
-    <div class="table-name">
-      leaderboard_snapshots
-      <span class="table-name-tag">MATERIALIZED CACHE</span>
-    </div>
-    <div class="schema-scroll"><div class="schema-grid">
-      <div class="schema-head">
-        <div class="schema-head-cell">Column</div>
-        <div class="schema-head-cell">Type</div>
-        <div class="schema-head-cell">Key</div>
-        <div class="schema-head-cell">Description</div>
-      </div>
-      <div class="schema-row"><div class="schema-cell col-name">id</div><div class="schema-cell col-type">UUID</div><div class="schema-cell"><span class="col-pk">PK</span></div><div class="schema-cell col-desc">Primary key</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">filter_key</div><div class="schema-cell col-type">VARCHAR(200)</div><div class="schema-cell"><span class="col-idx">UNQ</span></div><div class="schema-cell col-desc">Composite key: "global:ALL:ALL", "country:DE:rust"</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">scope</div><div class="schema-cell col-type">VARCHAR(20)</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">global / country / city / stack</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">scope_value</div><div class="schema-cell col-type">VARCHAR(100)</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">e.g. "DE", "Berlin", "TypeScript"</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">page</div><div class="schema-cell col-type">INTEGER</div><div class="schema-cell"></div><div class="schema-cell col-desc">Paginated snapshot page number</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">payload</div><div class="schema-cell col-type">JSONB</div><div class="schema-cell"></div><div class="schema-cell col-desc">Pre-serialized developer rows for this page</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">total_count</div><div class="schema-cell col-type">INTEGER</div><div class="schema-cell"></div><div class="schema-cell col-desc">Total developers in this filter scope</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">generated_at</div><div class="schema-cell col-type">TIMESTAMPTZ</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">Snapshot generation time for TTL check</div></div>
-      <div class="schema-row"><div class="schema-cell col-name">expires_at</div><div class="schema-cell col-type">TIMESTAMPTZ</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">When Redis should regenerate this snapshot</div></div>
+  <div class="ts rev">
+    <div class="ts-name">leaderboard_snapshots <span class="ts-tag">MATERIALIZED CACHE</span></div>
+    <div class="ts-scroll"><div class="sg">
+      <div class="sh"><div class="shc">Column</div><div class="shc">Type</div><div class="shc">Key</div><div class="shc">Description</div></div>
+      <div class="sr"><div class="sc cn">id</div><div class="sc ct">UUID</div><div class="sc"><span class="pk">PK</span></div><div class="sc cd">Primary key</div></div>
+      <div class="sr"><div class="sc cn">filter_key</div><div class="sc ct">VARCHAR(200)</div><div class="sc"><span class="ix">UNQ</span></div><div class="sc cd">"global:ALL:ALL", "country:DE:rust"</div></div>
+      <div class="sr"><div class="sc cn">scope</div><div class="sc ct">VARCHAR(20)</div><div class="sc"><span class="ix">IDX</span></div><div class="sc cd">global / country / city / stack</div></div>
+      <div class="sr"><div class="sc cn">payload</div><div class="sc ct">JSONB</div><div class="sc"></div><div class="sc cd">Pre-serialized developer rows for this page</div></div>
+      <div class="sr"><div class="sc cn">generated_at</div><div class="sc ct">TIMESTAMPTZ</div><div class="sc"><span class="ix">IDX</span></div><div class="sc cd">Snapshot generation time for TTL check</div></div>
+      <div class="sr"><div class="sc cn">expires_at</div><div class="sc ct">TIMESTAMPTZ</div><div class="sc"><span class="ix">IDX</span></div><div class="sc cd">When Redis should regenerate this snapshot</div></div>
     </div></div>
   </div>
-</div><!-- /.section-inner -->
+
+</div>
 </section>
 
 <!-- 05 ARCHITECTURE -->
-<section id="architecture" class="pitch-section">
-<div class="section-inner">
-  <div class="section-eyebrow">
-    <span class="section-num">05</span>
-    <span class="section-rule"></span>
-    <span class="section-tag">System Architecture</span>
+<section id="architecture" class="s">
+<div class="inner">
+  <div class="eye"><span class="eye-n">05</span><span class="eye-r"></span><span class="eye-t">System Architecture</span></div>
+  <h2 class="h1">System <span class="g">architecture</span></h2>
+  <p class="lead rev">Six tiers from user request to raw data. Each layer independently scalable.</p>
+  <div class="arch rev">
+    <div class="at"><div class="at-lbl"><div class="at-n">TIER 01</div><div class="at-name">Edge & Delivery</div></div><div class="at-chips"><div class="chip p">Vercel Edge Network</div><div class="chip">Next.js 14 App Router</div><div class="chip">Server Components</div><div class="chip">ISR / Static Generation</div><div class="chip">Edge Middleware</div></div></div>
+    <div class="at-arr">↓ API boundary ↓</div>
+    <div class="at"><div class="at-lbl"><div class="at-n">TIER 02</div><div class="at-name">API Gateway</div></div><div class="at-chips"><div class="chip p">REST API (Node/Hono)</div><div class="chip">Rate Limiting</div><div class="chip">Auth Middleware</div><div class="chip">Zod Validation</div><div class="chip">OpenTelemetry</div></div></div>
+    <div class="at-arr">↓ cache layer ↓</div>
+    <div class="at"><div class="at-lbl"><div class="at-n">TIER 03</div><div class="at-name">Cache Layer</div></div><div class="at-chips"><div class="chip p">Redis Cluster</div><div class="chip t">Upstash Serverless</div><div class="chip">Leaderboard TTL 5min</div><div class="chip">Profile TTL 30min</div><div class="chip">Pub/Sub invalidation</div></div></div>
+    <div class="at-arr">↓ compute ↓</div>
+    <div class="at"><div class="at-lbl"><div class="at-n">TIER 04</div><div class="at-name">Scoring Engine</div></div><div class="at-chips"><div class="chip p">TypeScript Workers</div><div class="chip">5-component score calc</div><div class="chip">Percentile normalization</div><div class="chip">Anti-gaming filters</div><div class="chip t">BullMQ job queue</div></div></div>
+    <div class="at-arr">↓ ingestion ↓</div>
+    <div class="at"><div class="at-lbl"><div class="at-n">TIER 05</div><div class="at-name">GitHub Ingestion</div></div><div class="at-chips"><div class="chip p">Ingestion Workers</div><div class="chip">GitHub REST v3</div><div class="chip">GraphQL API v4</div><div class="chip">Multi-token rotation</div><div class="chip">Delta sync (etag)</div></div></div>
+    <div class="at-arr">↓ persistence ↓</div>
+    <div class="at"><div class="at-lbl"><div class="at-n">TIER 06</div><div class="at-name">Data Storage</div></div><div class="at-chips"><div class="chip p">PostgreSQL 16</div><div class="chip t">Supabase / Neon</div><div class="chip">Table partitioning</div><div class="chip">Read replicas</div><div class="chip">TimescaleDB</div></div></div>
   </div>
-  <h2 class="section-h2">System <span style="color:var(--gold)">architecture</span></h2>
-  <p class="section-lead reveal">Six tiers from user request to raw data. Each layer independently scalable.</p>
-
-  <div class="arch-flow reveal">
-    <div class="arch-tier">
-      <div class="arch-tier-label">
-        <div class="arch-tier-num">TIER 01</div>
-        <div class="arch-tier-name">Edge &<br>Delivery</div>
-      </div>
-      <div class="arch-tier-content">
-        <div class="arch-chip primary">Vercel Edge Network</div>
-        <div class="arch-chip">Next.js 14 App Router</div>
-        <div class="arch-chip">Server Components</div>
-        <div class="arch-chip">ISR / Static Generation</div>
-        <div class="arch-chip">CDN Asset Cache</div>
-        <div class="arch-chip">Edge Middleware</div>
-      </div>
-    </div>
-    <div class="arch-arrow">↓  API boundary  ↓</div>
-    <div class="arch-tier">
-      <div class="arch-tier-label">
-        <div class="arch-tier-num">TIER 02</div>
-        <div class="arch-tier-name">API<br>Gateway</div>
-      </div>
-      <div class="arch-tier-content">
-        <div class="arch-chip primary">REST API (Node/Hono)</div>
-        <div class="arch-chip">Rate Limiting (token bucket)</div>
-        <div class="arch-chip">Auth Middleware</div>
-        <div class="arch-chip">Input Validation (Zod)</div>
-        <div class="arch-chip">Request Queuing</div>
-        <div class="arch-chip">Observability (OpenTelemetry)</div>
-      </div>
-    </div>
-    <div class="arch-arrow">↓  cache layer  ↓</div>
-    <div class="arch-tier">
-      <div class="arch-tier-label">
-        <div class="arch-tier-num">TIER 03</div>
-        <div class="arch-tier-name">Cache<br>Layer</div>
-      </div>
-      <div class="arch-tier-content">
-        <div class="arch-chip primary">Redis Cluster</div>
-        <div class="arch-chip tech">Upstash (Serverless)</div>
-        <div class="arch-chip">Leaderboard TTL 5min</div>
-        <div class="arch-chip">Profile TTL 30min</div>
-        <div class="arch-chip">Score TTL 10min</div>
-        <div class="arch-chip">Pub/Sub for invalidation</div>
-      </div>
-    </div>
-    <div class="arch-arrow">↓  compute  ↓</div>
-    <div class="arch-tier">
-      <div class="arch-tier-label">
-        <div class="arch-tier-num">TIER 04</div>
-        <div class="arch-tier-name">Scoring<br>Engine</div>
-      </div>
-      <div class="arch-tier-content">
-        <div class="arch-chip primary">TypeScript Workers</div>
-        <div class="arch-chip">5-component score calc</div>
-        <div class="arch-chip">Percentile normalization</div>
-        <div class="arch-chip">Anti-gaming filters</div>
-        <div class="arch-chip">Rank recomputation</div>
-        <div class="arch-chip tech">BullMQ job queue</div>
-      </div>
-    </div>
-    <div class="arch-arrow">↓  ingestion  ↓</div>
-    <div class="arch-tier">
-      <div class="arch-tier-label">
-        <div class="arch-tier-num">TIER 05</div>
-        <div class="arch-tier-name">GitHub<br>Ingestion</div>
-      </div>
-      <div class="arch-tier-content">
-        <div class="arch-chip primary">Ingestion Workers</div>
-        <div class="arch-chip">GitHub REST v3 API</div>
-        <div class="arch-chip">GraphQL API (v4)</div>
-        <div class="arch-chip">Rate limit management</div>
-        <div class="arch-chip">Exponential backoff</div>
-        <div class="arch-chip">Multi-token rotation</div>
-        <div class="arch-chip">Delta sync (etag cache)</div>
-      </div>
-    </div>
-    <div class="arch-arrow">↓  persistence  ↓</div>
-    <div class="arch-tier">
-      <div class="arch-tier-label">
-        <div class="arch-tier-num">TIER 06</div>
-        <div class="arch-tier-name">Data<br>Storage</div>
-      </div>
-      <div class="arch-tier-content">
-        <div class="arch-chip primary">PostgreSQL 16</div>
-        <div class="arch-chip tech">Supabase / Neon</div>
-        <div class="arch-chip">Table partitioning (commits)</div>
-        <div class="arch-chip">Read replicas (leaderboard)</div>
-        <div class="arch-chip">Pg_trgm full-text search</div>
-        <div class="arch-chip">JSONB for dynamic metadata</div>
-        <div class="arch-chip">TimescaleDB (time-series)</div>
-      </div>
-    </div>
-  </div>
-</div><!-- /.section-inner -->
+</div>
 </section>
 
 <!-- 06 INGESTION -->
-<section id="ingestion" class="pitch-section dark-section">
-<div class="section-inner">
-  <div class="section-eyebrow">
-    <span class="section-num">06</span>
-    <span class="section-rule"></span>
-    <span class="section-tag">Data Ingestion Pipeline</span>
-  </div>
-  <h2 class="section-h2" style="color:var(--paper)">GitHub <span style="color:var(--gold)">ingestion</span> pipeline</h2>
-  <p class="section-lead" style="color:rgba(245,242,235,0.5);font-style:italic;">The ingestion layer is the foundation. It must be fast, resilient, and immune to GitHub's rate limiting constraints.</p>
-
-  <div class="two-col reveal" style="margin-top:48px;">
+<section id="ingestion" class="s s-dark">
+<div class="inner">
+  <div class="eye"><span class="eye-n">06</span><span class="eye-r"></span><span class="eye-t">Data Ingestion Pipeline</span></div>
+  <h2 class="h1">GitHub <span class="g">ingestion</span> pipeline</h2>
+  <p class="lead rev">Fast, resilient, and immune to GitHub's rate limiting constraints.</p>
+  <div class="g2 rev" style="margin-top:36px;">
     <div>
-      <div class="code-block">
-        <div class="code-header">
-          <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
-          <span class="code-filename">ingestion/sync-developer.ts</span>
-        </div>
-        <div class="code-body"><pre><span class="kw">export async function</span> <span class="fn">syncDeveloper</span>(
-  username: <span class="type">string</span>
-): <span class="type">Promise</span>&lt;<span class="type">SyncResult</span>&gt; {
+      <div class="cb">
+        <div class="cb-hdr"><div class="dots"><div class="d"></div><div class="d"></div><div class="d"></div></div><span class="cb-fn">ingestion/sync-developer.ts</span></div>
+        <div class="cb-body"><pre><span class="kw">export async function</span> <span class="fn">syncDeveloper</span>(
+  username: <span class="ty">string</span>
+): <span class="ty">Promise</span>&lt;<span class="ty">SyncResult</span>&gt; {
 
   <span class="cm">// 1. Fetch GitHub user profile</span>
   <span class="kw">const</span> profile = <span class="kw">await</span> github.<span class="fn">getUser</span>(username);
@@ -1970,553 +724,295 @@ pre { white-space: pre; min-width: 0; }
 
   <span class="cm">// 2. Fetch all repositories (paginated)</span>
   <span class="kw">const</span> repos = <span class="kw">await</span> github.<span class="fn">getUserRepos</span>(username, {
-    type: <span class="str">'owner'</span>,
-    sort: <span class="str">'updated'</span>,
-    per_page: <span class="num">100</span>,
+    type: <span class="st">'owner'</span>, per_page: <span class="nu">100</span>,
   });
 
   <span class="cm">// 3. Queue per-repo commit harvesting</span>
   <span class="kw">for</span> (<span class="kw">const</span> repo <span class="kw">of</span> repos) {
-    <span class="kw">await</span> commitQueue.<span class="fn">add</span>(<span class="str">'harvest-commits'</span>, {
+    <span class="kw">await</span> commitQueue.<span class="fn">add</span>(<span class="st">'harvest'</span>, {
       repoId: repo.id,
-      developerId: profile.id,
-      since: repo.lastSyncedAt ?? <span class="kw">null</span>,
+      since:  repo.lastSyncedAt ?? <span class="kw">null</span>,
     }, { priority: <span class="fn">getPriority</span>(repo.stars) });
   }
 
   <span class="cm">// 4. Fetch language breakdown (GraphQL)</span>
-  <span class="kw">const</span> languages = <span class="kw">await</span> github.<span class="fn">getLanguages</span>(repos);
-  <span class="kw">await</span> db.techStacks.<span class="fn">upsertForDeveloper</span>(profile.id, languages);
+  <span class="kw">const</span> langs = <span class="kw">await</span> github.<span class="fn">getLanguages</span>(repos);
+  <span class="kw">await</span> db.techStacks.<span class="fn">upsert</span>(profile.id, langs);
 
   <span class="cm">// 5. Queue score recalculation</span>
-  <span class="kw">await</span> scoreQueue.<span class="fn">add</span>(<span class="str">'recalculate'</span>, {
+  <span class="kw">await</span> scoreQueue.<span class="fn">add</span>(<span class="st">'recalculate'</span>, {
     developerId: profile.id,
-  }, { delay: <span class="num">5000</span> }); <span class="cm">// wait for commits</span>
+  }, { delay: <span class="nu">5000</span> });
 
-  <span class="kw">return</span> { status: <span class="str">'queued'</span>, repoCount: repos.length };
-}
-
-<span class="cm">// Rate limit manager — rotates tokens</span>
-<span class="kw">class</span> <span class="type">RateLimitManager</span> {
-  <span class="kw">private</span> tokens: <span class="type">string</span>[] = process.env.GITHUB_TOKENS!.<span class="fn">split</span>(<span class="str">','</span>);
-  <span class="kw">private</span> cursor = <span class="num">0</span>;
-
-  <span class="fn">next</span>(): <span class="type">string</span> {
-    <span class="kw">this</span>.cursor = (<span class="kw">this</span>.cursor + <span class="num">1</span>) % <span class="kw">this</span>.tokens.length;
-    <span class="kw">return this</span>.tokens[<span class="kw">this</span>.cursor];
-  }
-
-  <span class="kw">async</span> <span class="fn">handle429</span>(resetAt: <span class="type">Date</span>): <span class="type">Promise</span>&lt;<span class="kw">void</span>&gt; {
-    <span class="kw">const</span> delay = resetAt.<span class="fn">getTime</span>() - <span class="type">Date</span>.<span class="fn">now</span>() + <span class="num">1000</span>;
-    <span class="kw">await</span> <span class="fn">sleep</span>(delay); <span class="cm">// exponential backoff</span>
-  }
+  <span class="kw">return</span> { status: <span class="st">'queued'</span>, repos: repos.length };
 }</pre></div>
       </div>
     </div>
-
     <div>
-      <p class="body-text" style="color:rgba(245,242,235,0.4);">
-        <strong style="color:var(--paper);">Delta sync strategy:</strong> Only re-fetch commits newer than the last sync timestamp. GitHub ETags are stored per-repository so unchanged responses are not re-processed, reducing API calls by up to 80%.<br><br>
-        <strong style="color:var(--paper);">Token rotation:</strong> Multiple GitHub API tokens are rotated round-robin with 5,000 requests/hour each. At 10 tokens, that's 50,000 requests/hour available for ingestion.<br><br>
-        <strong style="color:var(--paper);">Queue priorities:</strong> New profile submissions get priority-1 (immediate). Daily delta syncs for active developers get priority-2. Weekly full syncs for inactive devs get priority-5.<br><br>
-        <strong style="color:var(--paper);">Commit deduplication:</strong> SHA hashes enforce unique constraints. Re-syncing a repo never produces duplicate commit rows.
-      </p>
-
-      <div class="code-block" style="margin-top:24px;">
-        <div class="code-header">
-          <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
-          <span class="code-filename">ingestion/queue-config.ts</span>
-        </div>
-        <div class="code-body"><pre><span class="kw">const</span> QUEUE_CONFIG = {
+      <p class="bod"><strong>Delta sync strategy:</strong> Only re-fetch commits newer than the last sync timestamp. GitHub ETags stored per-repository reduce API calls by up to 80%.<br><br><strong>Token rotation:</strong> Multiple GitHub API tokens rotated round-robin. At 10 tokens, that's 50,000 requests/hour.<br><br><strong>Queue priorities:</strong> New submissions get priority-1 (immediate). Daily delta syncs get priority-2. Weekly full syncs get priority-5.</p>
+      <div class="cb">
+        <div class="cb-hdr"><div class="dots"><div class="d"></div><div class="d"></div><div class="d"></div></div><span class="cb-fn">queue-config.ts</span></div>
+        <div class="cb-body"><pre><span class="kw">const</span> QUEUES = {
   commitHarvest: {
-    concurrency:  <span class="num">20</span>,     <span class="cm">// parallel repo workers</span>
-    limiter: { max: <span class="num">100</span>, duration: <span class="num">60000</span> },
-    attempts:     <span class="num">3</span>,
-    backoff:      { type: <span class="str">'exponential'</span>, delay: <span class="num">5000</span> },
+    concurrency: <span class="nu">20</span>,
+    limiter: { max: <span class="nu">100</span>, duration: <span class="nu">60000</span> },
+    attempts: <span class="nu">3</span>,
+    backoff: { type: <span class="st">'exponential'</span> },
   },
   scoreCalc: {
-    concurrency:  <span class="num">50</span>,     <span class="cm">// CPU-bound, scale separately</span>
-    attempts:     <span class="num">2</span>,
+    concurrency: <span class="nu">50</span>,
+    attempts: <span class="nu">2</span>,
   },
   profileSync: {
-    concurrency:  <span class="num">10</span>,
-    limiter: { max: <span class="num">500</span>, duration: <span class="num">3600000</span> },
+    concurrency: <span class="nu">10</span>,
+    limiter: { max: <span class="nu">500</span>, duration: <span class="nu">3600000</span> },
   },
-} <span class="kw">satisfies</span> <span class="type">Record</span>&lt;<span class="type">string</span>, <span class="type">QueueConfig</span>&gt;;</pre></div>
+};</pre></div>
       </div>
     </div>
-  </div><!-- /.two-col -->
-</div><!-- /.section-inner -->
+  </div>
+</div>
 </section>
 
 <!-- 07 ANTI-GAMING -->
-<section id="anti-gaming" class="pitch-section" style="background:var(--paper2)">
-<div class="section-inner">
-  <div class="section-eyebrow">
-    <span class="section-num">07</span>
-    <span class="section-rule"></span>
-    <span class="section-tag">Anti-Gaming System</span>
+<section id="antigaming" class="s">
+<div class="inner">
+  <div class="eye"><span class="eye-n">07</span><span class="eye-r"></span><span class="eye-t">Anti-Gaming System</span></div>
+  <h2 class="h1">Making it <span class="r">tamper-resistant</span></h2>
+  <p class="lead rev">Eight detection signals evaluated per-commit and per-developer to filter non-genuine engineering activity.</p>
+  <div class="dgrid rev">
+    <div class="dc"><div class="ds red">🚨 Attack Vector</div><div class="dt">Empty Commit Spam</div><div class="db">Hundreds of trivial commits (0 additions, 0 deletions) to inflate velocity scores. Often scripted via bots with cronjobs.</div></div>
+    <div class="dc"><div class="ds grn">✓ Detection Method</div><div class="dt">Minimum Delta Threshold</div><div class="db">Commits below a minimum viable delta (additions + deletions &lt; 5) are flagged with gaming_score &gt; 70 and excluded from velocity calculations.</div></div>
+    <div class="dc"><div class="ds red">🚨 Attack Vector</div><div class="dt">Repetitive File Cycling</div><div class="db">Repeatedly modifying the same 1–2 files (e.g. a README counter) to simulate active development without real code changes.</div></div>
+    <div class="dc"><div class="ds grn">✓ Detection Method</div><div class="dt">File Entropy Analysis</div><div class="db">The ratio of unique files touched vs total commit count is tracked. Entropy below a threshold triggers a gaming_flag.</div></div>
+    <div class="dc"><div class="ds red">🚨 Attack Vector</div><div class="dt">Bot Account Activity</div><div class="db">Using a bot GitHub account to make commits, or running automated push scripts that generate fake commit histories.</div></div>
+    <div class="dc"><div class="ds grn">✓ Detection Method</div><div class="dt">Commit Pattern Analysis</div><div class="db">Commits clustered at identical time intervals are flagged. Human patterns have natural variance. Perfect regularity is a bot signal.</div></div>
+    <div class="dc"><div class="ds red">🚨 Attack Vector</div><div class="dt">Star Farming</div><div class="db">Creating star-exchange networks where developers collectively star each other's repos to inflate the impact signal.</div></div>
+    <div class="dc"><div class="ds grn">✓ Detection Method</div><div class="dt">Star Velocity Anomaly</div><div class="db">Stars from accounts with low follower counts or accounts created within 30 days of the starring event are weighted down.</div></div>
   </div>
-  <h2 class="section-h2">Making it <span style="color:var(--rust)">tamper-resistant</span></h2>
-  <p class="section-lead reveal">Any ranking system faces adversarial users. POW implements seven detection signals evaluated per-commit and per-developer to filter non-genuine engineering activity.</p>
-
-  <div class="detection-grid reveal">
-    <div class="detection-card">
-      <div class="detection-signal red">🚨 Attack Vector</div>
-      <div class="detection-title">Empty Commit Spam</div>
-      <div class="detection-body">Developers creating hundreds of trivial commits (0 additions, 0 deletions, single character changes) to inflate velocity scores. Often scripted via bots with cronjobs.</div>
-    </div>
-    <div class="detection-card">
-      <div class="detection-signal green">✓ Detection Method</div>
-      <div class="detection-title">Minimum Delta Threshold</div>
-      <div class="detection-body">Commits below a minimum viable delta (additions + deletions &lt; 5) are flagged with gaming_score &gt; 70 and excluded from velocity calculations. Merge commits are also weighted separately.</div>
-    </div>
-    <div class="detection-card">
-      <div class="detection-signal red">🚨 Attack Vector</div>
-      <div class="detection-title">Repetitive File Cycling</div>
-      <div class="detection-body">Repeatedly modifying the same 1–2 files (e.g. a README counter or a single timestamp file) to simulate active development without contributing real code changes.</div>
-    </div>
-    <div class="detection-card">
-      <div class="detection-signal green">✓ Detection Method</div>
-      <div class="detection-title">File Entropy Analysis</div>
-      <div class="detection-body">The ratio of unique files touched vs total commit count is tracked per developer. Entropy below a threshold triggers a gaming_flag. Healthy engineers spread changes across many files.</div>
-    </div>
-    <div class="detection-card">
-      <div class="detection-signal red">🚨 Attack Vector</div>
-      <div class="detection-title">Bot Account Activity</div>
-      <div class="detection-body">Using a bot GitHub account to make commits on behalf of a developer's repositories, or running automated push scripts that generate fake commit histories.</div>
-    </div>
-    <div class="detection-card">
-      <div class="detection-signal green">✓ Detection Method</div>
-      <div class="detection-title">Commit Pattern Analysis</div>
-      <div class="detection-body">Commits clustered at identical time intervals (e.g. every 60 seconds, every hour on the hour) are flagged. Human commit patterns have natural variance. Perfect regularity is a bot signal.</div>
-    </div>
-    <div class="detection-card">
-      <div class="detection-signal red">🚨 Attack Vector</div>
-      <div class="detection-title">Star Farming</div>
-      <div class="detection-body">Creating star-exchange networks where developers collectively star each other's repos to inflate the impact signal, particularly in closed communities or automated star-for-star systems.</div>
-    </div>
-    <div class="detection-card">
-      <div class="detection-signal green">✓ Detection Method</div>
-      <div class="detection-title">Star Velocity Anomaly</div>
-      <div class="detection-body">Repositories gaining more than N stars per day from accounts with low follower counts or accounts created within 30 days of the starring event are weighted down in the impact calculation.</div>
-    </div>
-    </div>
-  </div><!-- /.detection-grid -->
-</div><!-- /.section-inner -->
+</div>
 </section>
 
 <!-- 08 SCALABILITY -->
-<section id="scalability" class="pitch-section">
-<div class="section-inner">
-  <div class="section-eyebrow">
-    <span class="section-num">08</span>
-    <span class="section-rule"></span>
-    <span class="section-tag">Scalability Plan</span>
-  </div>
-  <h2 class="section-h2">Built to <span style="color:var(--gold)">scale</span></h2>
-  <p class="section-lead reveal">Three distinct infrastructure phases take POW from launch to global scale with 26M+ indexed developers.</p>
-
-  <div class="scale-grid reveal">
-    <div class="scale-card">
-      <div class="scale-phase">Phase I · Launch</div>
-      <div class="scale-users gold">10K</div>
-      <div class="scale-label">Developers Indexed</div>
-      <ul class="scale-items">
-        <li class="scale-item">Single Postgres instance (Supabase Pro)</li>
-        <li class="scale-item">Single Redis instance (Upstash)</li>
-        <li class="scale-item">Vercel serverless API routes</li>
-        <li class="scale-item">10 GitHub API tokens (50K req/hr)</li>
-        <li class="scale-item">BullMQ workers on Railway</li>
-        <li class="scale-item">Commits table not yet partitioned</li>
+<section id="scalability" class="s">
+<div class="inner">
+  <div class="eye"><span class="eye-n">08</span><span class="eye-r"></span><span class="eye-t">Scalability Plan</span></div>
+  <h2 class="h1">Built to <span class="g">scale</span></h2>
+  <p class="lead rev">Three infrastructure phases take POW from launch to 26M+ indexed developers.</p>
+  <div class="sgrid rev">
+    <div class="scard">
+      <div class="sc-ph">Phase I · Launch</div>
+      <div class="sc-u g">10K</div>
+      <div class="sc-l">Developers Indexed</div>
+      <ul class="sc-list">
+        <li class="sc-li">Single Postgres instance (Supabase Pro)</li>
+        <li class="sc-li">Single Redis instance (Upstash)</li>
+        <li class="sc-li">Vercel serverless API routes</li>
+        <li class="sc-li">10 GitHub API tokens (50K req/hr)</li>
+        <li class="sc-li">BullMQ workers on Railway</li>
       </ul>
-      <div class="scale-infra">
-        <div class="scale-infra-label">Estimated Monthly Cost</div>
-        <div style="font-family:var(--display);font-size:28px;font-weight:800;color:var(--gold);letter-spacing:-1px;">~$180</div>
-      </div>
+      <div class="sc-cost"><div class="sc-cl">Est. Monthly Cost</div><div class="sc-cv" style="color:var(--gold);">~$180</div></div>
     </div>
-
-    <div class="scale-card">
-      <div class="scale-phase">Phase II · Growth</div>
-      <div class="scale-users teal">500K</div>
-      <div class="scale-label">Developers Indexed</div>
-      <ul class="scale-items">
-        <li class="scale-item">Postgres primary + 2 read replicas</li>
-        <li class="scale-item">Commits table partitioned by month</li>
-        <li class="scale-item">Redis cluster (3 nodes)</li>
-        <li class="scale-item">Dedicated worker fleet (8–16 nodes)</li>
-        <li class="scale-item">50+ GitHub tokens rotated</li>
-        <li class="scale-item">Separate scoring compute cluster</li>
-        <li class="scale-item">Leaderboard materialized views</li>
+    <div class="scard">
+      <div class="sc-ph">Phase II · Growth</div>
+      <div class="sc-u t">500K</div>
+      <div class="sc-l">Developers Indexed</div>
+      <ul class="sc-list">
+        <li class="sc-li">Postgres primary + 2 read replicas</li>
+        <li class="sc-li">Commits table partitioned by month</li>
+        <li class="sc-li">Redis cluster (3 nodes)</li>
+        <li class="sc-li">Dedicated worker fleet (8–16 nodes)</li>
+        <li class="sc-li">50+ GitHub tokens rotated</li>
       </ul>
-      <div class="scale-infra">
-        <div class="scale-infra-label">Estimated Monthly Cost</div>
-        <div style="font-family:var(--display);font-size:28px;font-weight:800;color:var(--teal);letter-spacing:-1px;">~$3,400</div>
-      </div>
+      <div class="sc-cost"><div class="sc-cl">Est. Monthly Cost</div><div class="sc-cv" style="color:var(--teal);">~$3,400</div></div>
     </div>
-
-    <div class="scale-card">
-      <div class="scale-phase">Phase III · Global</div>
-      <div class="scale-users rust">26M+</div>
-      <div class="scale-label">Developers Indexed</div>
-      <ul class="scale-items">
-        <li class="scale-item">Postgres sharded by developer_id hash</li>
-        <li class="scale-item">TimescaleDB for commit time-series</li>
-        <li class="scale-item">Redis cluster (multi-region)</li>
-        <li class="scale-item">100+ worker nodes (auto-scaling)</li>
-        <li class="scale-item">ML inference cluster (trajectory)</li>
-        <li class="scale-item">CDN-distributed leaderboard snapshots</li>
-        <li class="scale-item">Elasticsearch for full-text dev search</li>
-        <li class="scale-item">Multi-region Postgres (read)</li>
+    <div class="scard">
+      <div class="sc-ph">Phase III · Global</div>
+      <div class="sc-u r">26M+</div>
+      <div class="sc-l">Developers Indexed</div>
+      <ul class="sc-list">
+        <li class="sc-li">Postgres sharded by developer_id hash</li>
+        <li class="sc-li">TimescaleDB for commit time-series</li>
+        <li class="sc-li">Redis cluster multi-region</li>
+        <li class="sc-li">100+ worker nodes (auto-scaling)</li>
+        <li class="sc-li">ML inference cluster (trajectory)</li>
       </ul>
-      <div class="scale-infra">
-        <div class="scale-infra-label">Estimated Monthly Cost</div>
-        <div style="font-family:var(--display);font-size:28px;font-weight:800;color:var(--rust);letter-spacing:-1px;">~$28K</div>
-      </div>
+      <div class="sc-cost"><div class="sc-cl">Est. Monthly Cost</div><div class="sc-cv" style="color:var(--rust);">~$28K</div></div>
     </div>
   </div>
-
-  <div class="two-col reveal" style="margin-top:60px;">
-    <div>
-      <h3 style="font-family:var(--display);font-size:24px;font-weight:700;letter-spacing:-1px;margin-bottom:16px;">Database scaling strategy</h3>
-      <p class="body-text">
-        The <strong>commits table</strong> is the largest growth vector — at 26M developers averaging 2,000 lifetime commits each, that's ~52 billion rows. PostgreSQL declarative partitioning by month keeps individual partition sizes manageable. Old partitions can be moved to cheaper cold storage.<br><br>
-        <strong>Leaderboard reads</strong> are served entirely from Redis-cached materialized snapshots. The live PostgreSQL leaderboard query is only run by background workers, never by user requests.<br><br>
-        <strong>Score recalculations</strong> are stateless workers that read from Postgres and write back scores atomically. They scale horizontally without coordination.
-      </p>
-    </div>
-    <div>
-      <div class="code-block">
-        <div class="code-header">
-          <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
-          <span class="code-filename">migrations/partition-commits.sql</span>
-        </div>
-        <div class="code-body"><pre><span class="cm">-- Phase II: Partition commits by month</span>
-<span class="kw">CREATE TABLE</span> commits (
-  id           <span class="type">UUID</span>        <span class="kw">NOT NULL</span>,
-  developer_id <span class="type">UUID</span>        <span class="kw">NOT NULL</span>,
-  committed_at <span class="type">TIMESTAMPTZ</span> <span class="kw">NOT NULL</span>,
-  <span class="cm">-- ... all other columns</span>
-) <span class="kw">PARTITION BY RANGE</span> (committed_at);
-
-<span class="cm">-- Auto-create monthly partitions</span>
-<span class="kw">CREATE TABLE</span> commits_2025_01
-  <span class="kw">PARTITION OF</span> commits
-  <span class="kw">FOR VALUES FROM</span> (<span class="str">'2025-01-01'</span>)
-              <span class="kw">TO</span> (<span class="str">'2025-02-01'</span>);
-
-<span class="cm">-- Composite index on hot queries</span>
-<span class="kw">CREATE INDEX</span> idx_commits_dev_time
-  <span class="kw">ON</span> commits (developer_id, committed_at <span class="kw">DESC</span>)
-  <span class="kw">WHERE</span> gaming_score &lt; <span class="num">50</span>;</pre></div>
-      </div>
-    </div>
-  </div><!-- /.two-col -->
-</div><!-- /.section-inner -->
+</div>
 </section>
 
 <!-- 09 MARKET -->
-<section id="market" class="pitch-section dark-section">
-<div class="section-inner">
-  <div class="section-eyebrow">
-    <span class="section-num">09</span>
-    <span class="section-rule"></span>
-    <span class="section-tag">Market Opportunity</span>
+<section id="market" class="s s-dark">
+<div class="inner">
+  <div class="eye"><span class="eye-n">09</span><span class="eye-r"></span><span class="eye-t">Market Opportunity</span></div>
+  <h2 class="h1">$12B <span class="g">market</span></h2>
+  <p class="lead rev">Developer tools, technical recruiting, and B2B workforce intelligence converge at POW.</p>
+  <div class="tam rev">
+    <div class="tam-i"><div class="tam-v g">$12B</div><div class="tam-l">Total Addressable Market</div><div class="tam-d">Technical recruiting software, developer tools, and workforce analytics globally</div></div>
+    <div class="tam-i"><div class="tam-v t">$1.8B</div><div class="tam-l">Serviceable Addressable Market</div><div class="tam-d">Developer reputation platforms, GitHub-adjacent tools, engineering intelligence</div></div>
+    <div class="tam-i"><div class="tam-v r">$320M</div><div class="tam-l">Serviceable Obtainable Market</div><div class="tam-d">Year 3 realistic capture with leaderboard + hiring marketplace active</div></div>
   </div>
-  <h2 class="section-h2" style="color:var(--paper);">$12B <span style="color:var(--gold)">market</span></h2>
-  <p class="section-lead" style="color:rgba(245,242,235,0.5);font-style:italic;">Three addressable markets converge at POW: developer tools, technical recruiting, and B2B workforce intelligence.</p>
-
-  <div class="tam-labels reveal">
-    <div class="tam-item" style="background:var(--ink);border-right:1px solid rgba(255,255,255,0.06);">
-      <div class="tam-val gold">$12B</div>
-      <div class="tam-label" style="color:rgba(245,242,235,0.35);">Total Addressable Market</div>
-      <div class="tam-desc" style="color:rgba(245,242,235,0.3);">Technical recruiting software, developer tools, and workforce analytics globally</div>
-    </div>
-    <div class="tam-item" style="background:var(--ink);border-right:1px solid rgba(255,255,255,0.06);">
-      <div class="tam-val teal">$1.8B</div>
-      <div class="tam-label" style="color:rgba(245,242,235,0.35);">Serviceable Addressable Market</div>
-      <div class="tam-desc" style="color:rgba(245,242,235,0.3);">Developer reputation platforms, GitHub-adjacent tools, engineering intelligence</div>
-    </div>
-    <div class="tam-item" style="background:var(--ink);">
-      <div class="tam-val rust">$320M</div>
-      <div class="tam-label" style="color:rgba(245,242,235,0.35);">Serviceable Obtainable Market</div>
-      <div class="tam-desc" style="color:rgba(245,242,235,0.3);">Year 3 realistic capture at scale with leaderboard + hiring marketplace active</div>
-    </div>
-  </div>
-
-  <div class="two-col reveal" style="margin-top:64px;">
+  <div class="g2 rev" style="margin-top:52px;">
     <div>
-      <h3 style="font-family:var(--display);font-size:28px;font-weight:700;letter-spacing:-1px;color:var(--paper);margin-bottom:20px;">Revenue model</h3>
-      <div class="metric-row">
-        <div class="metric-item">
-          <span class="metric-key">DEVELOPER · FREE</span>
-          <span class="metric-val" style="color:var(--paper);">$0</span>
-        </div>
-        <div class="metric-item">
-          <span class="metric-key">DEVELOPER PRO · MONTHLY</span>
-          <span class="metric-val">$9/mo</span>
-        </div>
-        <div class="metric-item">
-          <span class="metric-key">COMPANY SEAT · MONTHLY</span>
-          <span class="metric-val">$99/mo</span>
-        </div>
-        <div class="metric-item">
-          <span class="metric-key">ENTERPRISE API ACCESS</span>
-          <span class="metric-val">$2K–20K/yr</span>
-        </div>
-        <div class="metric-item">
-          <span class="metric-key">HIRING MARKETPLACE LEAD FEE</span>
-          <span class="metric-val">$5–15K/hire</span>
-        </div>
+      <h3 style="font-family:var(--disp);font-size:20px;font-weight:700;letter-spacing:-1px;color:var(--paper);margin-bottom:6px;">Revenue model</h3>
+      <div class="ml">
+        <div class="mr"><span class="mk">DEVELOPER · FREE</span><span class="mv b">$0</span></div>
+        <div class="mr"><span class="mk">DEVELOPER PRO · MONTHLY</span><span class="mv">$9/mo</span></div>
+        <div class="mr"><span class="mk">COMPANY SEAT · MONTHLY</span><span class="mv">$99/mo</span></div>
+        <div class="mr"><span class="mk">ENTERPRISE API ACCESS</span><span class="mv">$2K–20K/yr</span></div>
+        <div class="mr"><span class="mk">HIRING MARKETPLACE FEE</span><span class="mv">$5–15K/hire</span></div>
       </div>
     </div>
     <div>
-      <h3 style="font-family:var(--display);font-size:28px;font-weight:700;letter-spacing:-1px;color:var(--paper);margin-bottom:20px;">Comparable exits</h3>
-      <div class="metric-row">
-        <div class="metric-item">
-          <span class="metric-key">LINKEDIN (MICROSOFT, 2016)</span>
-          <span class="metric-val">$26B</span>
-        </div>
-        <div class="metric-item">
-          <span class="metric-key">HIRED.COM (FUNDING)</span>
-          <span class="metric-val">$133M</span>
-        </div>
-        <div class="metric-item">
-          <span class="metric-key">CODILITY (ACQUIRED)</span>
-          <span class="metric-val">$200M+</span>
-        </div>
-        <div class="metric-item">
-          <span class="metric-key">HACKERRANK (FUNDING)</span>
-          <span class="metric-val">$58M</span>
-        </div>
-        <div class="metric-item">
-          <span class="metric-key">GITHUB (MICROSOFT, 2018)</span>
-          <span class="metric-val">$7.5B</span>
-        </div>
+      <h3 style="font-family:var(--disp);font-size:20px;font-weight:700;letter-spacing:-1px;color:var(--paper);margin-bottom:6px;">Comparable exits</h3>
+      <div class="ml">
+        <div class="mr"><span class="mk">LINKEDIN (MICROSOFT, 2016)</span><span class="mv">$26B</span></div>
+        <div class="mr"><span class="mk">GITHUB (MICROSOFT, 2018)</span><span class="mv">$7.5B</span></div>
+        <div class="mr"><span class="mk">CODILITY (ACQUIRED)</span><span class="mv">$200M+</span></div>
+        <div class="mr"><span class="mk">HACKERRANK (FUNDING)</span><span class="mv">$58M</span></div>
+        <div class="mr"><span class="mk">HIRED.COM (FUNDING)</span><span class="mv">$133M</span></div>
       </div>
     </div>
-  </div><!-- /.two-col -->
-</div><!-- /.section-inner -->
+  </div>
+</div>
 </section>
 
 <!-- 10 ROADMAP -->
-<section id="roadmap" class="pitch-section" style="background:var(--paper2)">
-<div class="section-inner">
-  <div class="section-eyebrow">
-    <span class="section-num">10</span>
-    <span class="section-rule"></span>
-    <span class="section-tag">Product Roadmap</span>
+<section id="roadmap" class="s">
+<div class="inner">
+  <div class="eye"><span class="eye-n">10</span><span class="eye-r"></span><span class="eye-t">Product Roadmap</span></div>
+  <h2 class="h1">Roadmap</h2>
+  <p class="lead rev">Three phases. Each unlocks a new market layer while deepening the data moat.</p>
+  <div class="rm rev">
+    <div class="rmi done">
+      <div class="rp">Q1–Q2 2025</div>
+      <div>
+        <div class="rph g">PHASE ONE · COMPLETE</div>
+        <div class="rtit">Execution Index & Global Leaderboard</div>
+        <div class="rbod">Core scoring engine, GitHub ingestion pipeline, global leaderboard with geographic and stack-based filtering. Anti-gaming detection. Developer profile pages.</div>
+        <div class="rfeat"><span class="rf">Execution Score</span><span class="rf">Global Leaderboard</span><span class="rf">Country / City Filter</span><span class="rf">Stack Filter</span><span class="rf">Anti-Gaming v1</span><span class="rf">GitHub OAuth</span></div>
+      </div>
+    </div>
+    <div class="rmi">
+      <div class="rp">Q3–Q4 2025</div>
+      <div>
+        <div class="rph t">PHASE TWO · IN PROGRESS</div>
+        <div class="rtit">Trajectory AI & Reputation Graph</div>
+        <div class="rbod">Machine learning trajectory prediction. Collaboration graph mapping influence between engineers. Developer comparison tools. First paid tier.</div>
+        <div class="rfeat"><span class="rf">ML Trajectory Model</span><span class="rf">Reputation Graph</span><span class="rf">Developer Follows</span><span class="rf">POW Pro ($9/mo)</span><span class="rf">API v1</span></div>
+      </div>
+    </div>
+    <div class="rmi">
+      <div class="rp">Q1–Q2 2026</div>
+      <div>
+        <div class="rph r">PHASE THREE · PLANNED</div>
+        <div class="rtit">Hiring Marketplace & Enterprise</div>
+        <div class="rbod">B2B hiring marketplace where companies identify top engineers by execution score, stack, and location. Enterprise API for ATS integration. Team analytics for engineering managers.</div>
+        <div class="rfeat"><span class="rf">Hiring Marketplace</span><span class="rf">ATS Integration</span><span class="rf">Team Analytics</span><span class="rf">Enterprise API</span><span class="rf">Recruiter Dashboard</span></div>
+      </div>
+    </div>
   </div>
-  <h2 class="section-h2">Roadmap</h2>
-  <p class="section-lead reveal">Three phases. Each phase unlocks a new market layer while deepening the data moat.</p>
-
-  <div class="roadmap reveal">
-    <div class="roadmap-item done">
-      <div class="roadmap-period">Q1–Q2 2025</div>
-      <div>
-        <div class="roadmap-phase gold">PHASE ONE · COMPLETE</div>
-        <div class="roadmap-title">Execution Index &<br>Global Leaderboard</div>
-        <div class="roadmap-body">Core scoring engine, GitHub ingestion pipeline, global leaderboard with geographic and stack-based filtering. Anti-gaming detection. Developer profile pages. Organic viral growth loop.</div>
-        <div class="roadmap-features">
-          <span class="roadmap-feature">Execution Score</span>
-          <span class="roadmap-feature">Global Leaderboard</span>
-          <span class="roadmap-feature">Country / City Filter</span>
-          <span class="roadmap-feature">Stack Filter</span>
-          <span class="roadmap-feature">Profile Pages</span>
-          <span class="roadmap-feature">Anti-Gaming v1</span>
-          <span class="roadmap-feature">GitHub OAuth</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="roadmap-item">
-      <div class="roadmap-period">Q3–Q4 2025</div>
-      <div>
-        <div class="roadmap-phase teal">PHASE TWO · IN PROGRESS</div>
-        <div class="roadmap-title">Trajectory AI &<br>Reputation Graph</div>
-        <div class="roadmap-body">Machine learning trajectory prediction that forecasts developer growth. Collaboration graph mapping influence between engineers. Followed developer feeds. Developer comparison tools. First paid tier.</div>
-        <div class="roadmap-features">
-          <span class="roadmap-feature">ML Trajectory Model</span>
-          <span class="roadmap-feature">Reputation Graph</span>
-          <span class="roadmap-feature">Developer Follows</span>
-          <span class="roadmap-feature">Comparison Mode</span>
-          <span class="roadmap-feature">Embed Badges</span>
-          <span class="roadmap-feature">POW Pro ($9/mo)</span>
-          <span class="roadmap-feature">API v1</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="roadmap-item">
-      <div class="roadmap-period">Q1–Q2 2026</div>
-      <div>
-        <div class="roadmap-phase rust">PHASE THREE · PLANNED</div>
-        <div class="roadmap-title">Hiring Marketplace &<br>Enterprise Intelligence</div>
-        <div class="roadmap-body">B2B hiring marketplace where companies identify top engineers by execution score, stack, and location. Enterprise API for ATS integration. Team analytics for engineering managers. The Bloomberg Terminal for developers.</div>
-        <div class="roadmap-features">
-          <span class="roadmap-feature">Company Accounts</span>
-          <span class="roadmap-feature">Hiring Marketplace</span>
-          <span class="roadmap-feature">ATS Integration</span>
-          <span class="roadmap-feature">Team Analytics</span>
-          <span class="roadmap-feature">Enterprise API</span>
-          <span class="roadmap-feature">Recruiter Dashboard</span>
-          <span class="roadmap-feature">Salary Benchmarks</span>
-        </div>
-      </div>
-    </div>
-  </div><!-- /.roadmap -->
-</div><!-- /.section-inner -->
+</div>
 </section>
 
-<!-- 11 CLOSING / THE ASK -->
-<section id="closing" class="pitch-section dark-section" style="min-height:100vh;display:flex;flex-direction:column;justify-content:center;">
-<div class="section-inner" style="width:100%;">
-  <div class="section-eyebrow">
-    <span class="section-num">11</span>
-    <span class="section-rule"></span>
-    <span class="section-tag">The Ask</span>
+<!-- 11 CLOSING -->
+<section id="closing" class="s s-dark" style="min-height:100vh;display:flex;align-items:center;">
+<div class="inner" style="width:100%;">
+  <div class="eye"><span class="eye-n">11</span><span class="eye-r"></span><span class="eye-t">The Ask</span></div>
+  <div class="cgrid rev">
+    <div>
+      <div class="cbig">THE<br><span class="g">BLOOMBERG</span><br>TERMINAL<br>FOR<br>DEVELOPERS.</div>
+      <a href="mailto:founders@pow.dev" class="cemail">founders@pow.dev</a>
+      <div class="cmeta">pow.dev<br>Confidential · 2025</div>
+    </div>
+    <div>
+      <div style="font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:18px;">Funding round</div>
+      <div style="font-family:var(--disp);font-size:60px;font-weight:800;letter-spacing:-4px;color:var(--paper);line-height:1;margin-bottom:5px;">$1.5M</div>
+      <div style="font-family:var(--mono);font-size:10px;color:rgba(245,242,235,0.25);letter-spacing:1px;margin-bottom:36px;">Pre-seed · SAFE</div>
+      <div class="ml">
+        <div class="mr"><span class="mk">USE OF FUNDS · ENGINEERING</span><span class="mv">60%</span></div>
+        <div class="mr"><span class="mk">USE OF FUNDS · GROWTH</span><span class="mv">25%</span></div>
+        <div class="mr"><span class="mk">USE OF FUNDS · OPERATIONS</span><span class="mv">15%</span></div>
+        <div class="mr"><span class="mk">TARGET MILESTONE (18 MONTHS)</span><span class="mv b">500K devs</span></div>
+        <div class="mr"><span class="mk">SERIES A TRIGGER</span><span class="mv b">$500K ARR</span></div>
+      </div>
+      <div style="margin-top:32px;padding-top:26px;border-top:1px solid rgba(255,255,255,0.06);">
+        <div style="font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:12px;">Why now</div>
+        <p style="font-family:var(--ser);font-size:14px;color:rgba(245,242,235,0.45);line-height:1.7;font-style:italic;">26 million developers are on GitHub. Every commit is a public, tamper-evident record of engineering work. The data has always existed — the intelligence layer hasn't. POW is that layer.</p>
+      </div>
+    </div>
   </div>
-
-  <div class="closing-grid reveal">
-    <div>
-      <div class="closing-big">
-        THE<br>
-        <span class="gold">BLOOMBERG</span><br>
-        TERMINAL<br>
-        FOR<br>
-        DEVELOPERS.
-      </div>
-      <div class="cta-block">
-        <div style="font-family:var(--mono);font-size:10px;letter-spacing:3px;color:rgba(245,242,235,0.3);margin-bottom:12px;text-transform:uppercase;">Get in touch</div>
-        <a href="/cdn-cgi/l/email-protection#f99f968c979d9c8b8ab989968ed79d9c8f" class="cta-email"><span class="__cf_email__" data-cfemail="3e58514b505a5b4c4d7e4e5149105a5b48">[email&#160;protected]</span></a>
-        <div class="cta-meta">
-          pow.dev<br>
-          Confidential · 2025
-        </div>
-      </div>
-    </div>
-
-    <div>
-      <div style="font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:24px;">Funding round</div>
-      <div style="font-family:var(--display);font-size:64px;font-weight:800;letter-spacing:-4px;color:var(--paper);line-height:1;margin-bottom:8px;">$1.5M</div>
-      <div style="font-family:var(--mono);font-size:11px;color:rgba(245,242,235,0.3);letter-spacing:1px;margin-bottom:48px;">Pre-seed · SAFE</div>
-
-      <div class="metric-row">
-        <div class="metric-item">
-          <span class="metric-key">USE OF FUNDS · ENGINEERING</span>
-          <span class="metric-val">60%</span>
-        </div>
-        <div class="metric-item">
-          <span class="metric-key">USE OF FUNDS · GROWTH</span>
-          <span class="metric-val">25%</span>
-        </div>
-        <div class="metric-item">
-          <span class="metric-key">USE OF FUNDS · OPERATIONS</span>
-          <span class="metric-val">15%</span>
-        </div>
-        <div class="metric-item">
-          <span class="metric-key">TARGET MILESTONE (18 MONTHS)</span>
-          <span class="metric-val" style="color:var(--paper);">500K devs</span>
-        </div>
-        <div class="metric-item">
-          <span class="metric-key">SERIES A TRIGGER</span>
-          <span class="metric-val" style="color:var(--paper);">$500K ARR</span>
-        </div>
-      </div>
-
-      <div style="margin-top:40px;padding-top:32px;border-top:1px solid rgba(255,255,255,0.06);">
-        <div style="font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:20px;">Why now</div>
-        <p style="font-family:var(--serif);font-size:16px;color:rgba(245,242,235,0.5);line-height:1.7;font-style:italic;">
-          26 million developers are on GitHub. Every commit is a public, tamper-evident record of engineering work. The data has always existed — the intelligence layer hasn't. POW is that layer.
-        </p>
-      </div>
-    </div>
-  </div><!-- /.closing-grid -->
-</div><!-- /.section-inner -->
+</div>
 </section>
 
 </main>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-// ── PROGRESS BAR ──
-window.addEventListener('scroll', () => {
-  const scrolled = window.scrollY;
-  const total = document.body.scrollHeight - window.innerHeight;
-  document.getElementById('progress').style.width = (scrolled / total * 100) + '%';
-});
-
-// ── SIDEBAR MOBILE ──
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
+<script>
+// ── HAMBURGER TOGGLE ──
+function toggleNav() {
+  var nav = document.getElementById('nav');
+  var ov  = document.getElementById('ov');
+  var btn = document.getElementById('ham');
+  var isOpen = nav.classList.contains('open');
+  if (isOpen) {
+    nav.classList.remove('open');
+    ov.classList.remove('show');
+    btn.classList.remove('open');
+  } else {
+    nav.classList.add('open');
+    ov.classList.add('show');
+    btn.classList.add('open');
+  }
 }
 
-// ── ACTIVE NAV ──
-const allSections = document.querySelectorAll('.pitch-section[id]');
-const navLinks = document.querySelectorAll('nav ul li a');
+function closeNav() {
+  document.getElementById('nav').classList.remove('open');
+  document.getElementById('ov').classList.remove('show');
+  document.getElementById('ham').classList.remove('open');
+}
 
-const sectionObs = new IntersectionObserver(entries => {
-  entries.forEach(e => {
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeNav();
+});
+
+// ── SCROLL PROGRESS ──
+window.addEventListener('scroll', function() {
+  var s = window.scrollY;
+  var t = document.body.scrollHeight - window.innerHeight;
+  document.getElementById('progress').style.width = (t > 0 ? (s / t * 100) : 0) + '%';
+});
+
+// ── ACTIVE NAV ──
+var links = document.querySelectorAll('nav ul li a');
+var secs  = document.querySelectorAll('section[id]');
+
+var io = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) {
     if (e.isIntersecting) {
-      navLinks.forEach(a => a.classList.remove('active'));
-      const active = document.querySelector(`nav ul li a[href="#${e.target.id}"]`);
-      if (active) active.classList.add('active');
+      links.forEach(function(a) { a.classList.remove('on'); });
+      var a = document.querySelector('nav ul li a[href="#' + e.target.id + '"]');
+      if (a) a.classList.add('on');
     }
   });
-}, { threshold: 0.35 });
+}, { threshold: 0.25 });
 
-allSections.forEach(s => sectionObs.observe(s));
+secs.forEach(function(s) { io.observe(s); });
 
-// ── REVEAL OBSERVER ──
-const revealObs = new IntersectionObserver(entries => {
-  entries.forEach(e => {
+// ── REVEAL ON SCROLL ──
+var ro = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) {
     if (e.isIntersecting) {
-      e.target.classList.add('visible');
-      // Animate score bars if inside
-      e.target.querySelectorAll('.score-bar-fill').forEach(bar => {
-        setTimeout(() => {
-          bar.style.width = bar.dataset.width + '%';
-        }, 200);
+      e.target.classList.add('in');
+      e.target.querySelectorAll('.sbi-fill').forEach(function(b) {
+        setTimeout(function() { b.style.width = b.getAttribute('data-w') + '%'; }, 200);
       });
     }
   });
-}, { threshold: 0.08 });
+}, { threshold: 0.05 });
 
-document.querySelectorAll('.reveal, .reveal-left').forEach(el => revealObs.observe(el));
-
-// ── HERO STAT COUNTERS ──
-function animateNum(el, target, suffix, decimals) {
-  const dur = 1600;
-  const start = performance.now();
-  function step(now) {
-    const t = Math.min((now - start) / dur, 1);
-    const ease = 1 - Math.pow(1 - t, 4);
-    let val = ease * target;
-    el.textContent = (decimals ? val.toFixed(1) : Math.round(val)) + suffix;
-    if (t < 1) requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-}
-
-// Animate hero stats on load
-setTimeout(() => {
-  animateNum(document.querySelector('.hero-stat:nth-child(1) .hero-stat-val'), 26, 'M+', false);
-  animateNum(document.querySelector('.hero-stat:nth-child(2) .hero-stat-val'), 12, 'B', false);
-}, 600);
-
-// ── SCHEMA ROW HOVER HIGHLIGHT ──
-document.querySelectorAll('.schema-row').forEach(row => {
-  row.addEventListener('mouseenter', () => {
-    row.style.background = 'rgba(201,168,76,0.04)';
-  });
-  row.addEventListener('mouseleave', () => {
-    row.style.background = '';
-  });
-});
-
-// ── ARCH CHIP PULSE ──
-const archChips = document.querySelectorAll('.arch-chip.primary');
-let chipIdx = 0;
-setInterval(() => {
-  archChips.forEach(c => c.style.boxShadow = '');
-  archChips[chipIdx % archChips.length].style.boxShadow = '0 0 12px rgba(201,168,76,0.4)';
-  ch
+document.querySelectorAll('.rev').forEach(function(el) { ro.observe(el); });
+</script>
+</body>
+</html>
