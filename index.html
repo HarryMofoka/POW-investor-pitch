@@ -1195,37 +1195,106 @@ pre {
 .dark-section .body-text strong { color: var(--paper); }
 .dark-section .section-rule { background: rgba(255,255,255,0.08); }
 
-/* ── RESPONSIVE ── */
-@media (max-width: 900px) {
-  #sidebar { transform: translateX(-100%); }
-  #sidebar.open { transform: translateX(0); }
+/* ── CONTENT WRAPPER — constrains width on large screens ── */
+.section-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── CODE & PRE overflow fix ── */
+.code-body { overflow-x: auto; }
+pre { white-space: pre; min-width: 0; }
+
+/* ── SCHEMA TABLE wrapper for horizontal scroll on small screens ── */
+.schema-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.schema-grid { min-width: 640px; }
+
+/* ── SECTION padding scales with viewport ── */
+.pitch-section {
+  padding: clamp(60px, 8vh, 120px) clamp(32px, 5vw, 80px);
+}
+
+/* ── HERO full bleed ── */
+#hero { padding: clamp(60px, 8vh, 100px) clamp(40px, 6vw, 100px); }
+
+/* ── LARGE DESKTOP (≥1400px) ── */
+@media (min-width: 1400px) {
+  #sidebar { width: 260px; }
+  main { margin-left: 260px; }
+  .pitch-section { padding: 120px 100px; }
+  #hero { padding: 100px 120px; }
+  .hero-title { font-size: 160px; letter-spacing: -8px; }
+  .hero-sub { font-size: 24px; max-width: 640px; }
+  .hero-stats { max-width: 800px; }
+  .hero-stat-val { font-size: 38px; }
+  .two-col { gap: 100px; }
+  .two-col-wide { gap: 100px; }
+  .scale-grid { grid-template-columns: repeat(3, 1fr); }
+  .section-h2 { font-size: 64px; }
+  .section-lead { font-size: 22px; max-width: 680px; }
+  .body-text { font-size: 16px; max-width: 640px; }
+  .schema-head, .schema-row { grid-template-columns: 220px 160px 72px 1fr; }
+  .arch-tier-label { width: 180px; }
+  .closing-big { font-size: 80px; }
+}
+
+/* ── STANDARD DESKTOP (900px–1400px) ── */
+@media (min-width: 900px) and (max-width: 1399px) {
+  .schema-head, .schema-row { grid-template-columns: 180px 140px 60px 1fr; }
+  .scale-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ── TABLET & MOBILE (< 900px) ── */
+@media (max-width: 899px) {
+  #sidebar { transform: translateX(-100%); width: 240px; }
+  #sidebar.open { transform: translateX(0); box-shadow: 4px 0 40px rgba(0,0,0,0.2); }
   #mobile-menu-btn { display: block; }
   main { margin-left: 0; }
-  .pitch-section { padding: 60px 24px; }
-  #hero { padding: 80px 24px 60px; }
+  .pitch-section { padding: 64px 24px; }
+  #hero { padding: 100px 24px 64px; }
   .hero-nav-hint { left: 24px; bottom: 24px; }
   .two-col, .two-col-wide { grid-template-columns: 1fr; gap: 40px; }
   .problem-grid { grid-template-columns: 1fr; }
   .scale-grid { grid-template-columns: 1fr; }
-  .hero-stats { grid-template-columns: 1fr 1fr; }
+  .hero-stats { grid-template-columns: 1fr 1fr; max-width: 100%; }
   .hero-stat { border-bottom: 1px solid rgba(201,168,76,0.15); }
   .closing-grid { grid-template-columns: 1fr; }
   .tam-labels { grid-template-columns: 1fr; }
   .detection-grid { grid-template-columns: 1fr; }
-  .schema-head, .schema-row { grid-template-columns: 140px 120px 50px 1fr; }
-  .roadmap { }
   .roadmap::before { left: 60px; }
-  .roadmap-item { grid-template-columns: 120px 1fr; gap: 20px; }
+  .roadmap-item { grid-template-columns: 110px 1fr; gap: 16px; }
   .roadmap-item::before { left: 60px; }
+  .score-breakdown { padding: 28px; }
 }
 
-@media (max-width: 480px) {
+/* ── MOBILE (< 600px) ── */
+@media (max-width: 599px) {
   .hero-stats { grid-template-columns: 1fr 1fr; }
+  .hero-title { font-size: clamp(56px, 16vw, 96px); letter-spacing: -4px; }
   .schema-head { display: none; }
   .schema-row { grid-template-columns: 1fr 1fr; }
   .schema-cell:nth-child(3), .schema-cell:nth-child(4) { display: none; }
   .score-equation { gap: 6px; }
-  .score-eq-val { font-size: 24px; }
+  .score-eq-val { font-size: 22px; }
+  .arch-tier { grid-template-columns: 1fr; }
+  .arch-tier-label { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 20px; flex-direction: row; align-items: center; gap: 12px; }
+  .arch-tier-name { font-size: 12px; }
+  .roadmap-item { grid-template-columns: 1fr; }
+  .roadmap::before { display: none; }
+  .roadmap-item::before { display: none; }
+  .roadmap-period { font-size: 9px; margin-bottom: 6px; text-align: left; }
+  .detection-grid { grid-template-columns: 1fr; }
+  .closing-big { font-size: clamp(36px, 12vw, 56px); letter-spacing: -2px; }
+  .metric-key { font-size: 9px; letter-spacing: 0.5px; }
+  .metric-val { font-size: 18px; }
+  .tam-labels { grid-template-columns: 1fr; }
+  .vision-grid { grid-template-columns: 1fr; }
+  #hero { padding: 80px 20px 60px; }
+  .pitch-section { padding: 56px 20px; }
+  .code-body { padding: 20px 16px; }
+  pre { font-size: 11px; }
+  .arch-chip { font-size: 10px; padding: 5px 10px; }
 }
 </style>
 </head>
@@ -1285,7 +1354,7 @@ pre {
 <main>
 
 <!-- 00 HERO -->
-<section id="hero" class="pitch-section dark-section" style="padding:80px;">
+<section id="hero" class="pitch-section dark-section">
   <div class="hero-grid"></div>
   <div class="hero-glow"></div>
   <div class="hero-content">
@@ -1325,6 +1394,7 @@ pre {
 
 <!-- 01 PROBLEM -->
 <section id="problem" class="pitch-section">
+<div class="section-inner">
   <div class="section-eyebrow">
     <span class="section-num">01</span>
     <span class="section-rule"></span>
@@ -1354,11 +1424,13 @@ pre {
       <div class="problem-title">What POW Measures</div>
       <div class="problem-body">Raw commit velocity. Project complexity depth. Contribution consistency over years. Real repository impact. Trajectory acceleration. All derived from publicly visible, tamper-evident GitHub activity — the actual record of work.</div>
     </div>
-  </div>
+  </div><!-- /.problem-grid -->
+</div><!-- /.section-inner -->
 </section>
 
 <!-- 02 SOLUTION -->
 <section id="solution" class="pitch-section" style="background:var(--paper2)">
+<div class="section-inner">
   <div class="section-eyebrow">
     <span class="section-num">02</span>
     <span class="section-rule"></span>
@@ -1448,11 +1520,13 @@ pre {
         </div>
       </div>
     </div>
-  </div>
+  </div><!-- /.two-col -->
+</div><!-- /.section-inner -->
 </section>
 
 <!-- 03 SCORING ENGINE -->
 <section id="scoring" class="pitch-section">
+<div class="section-inner">
   <div class="section-eyebrow">
     <span class="section-num">03</span>
     <span class="section-rule"></span>
@@ -1552,11 +1626,13 @@ pre {
 <span class="kw">WHERE</span> id = <span class="gold-t">:developer_id</span>;</pre></div>
       </div>
     </div>
-  </div>
+  </div><!-- /.two-col-wide -->
+</div><!-- /.section-inner -->
 </section>
 
 <!-- 04 DATABASE -->
 <section id="database" class="pitch-section" style="background:var(--paper2)">
+<div class="section-inner">
   <div class="section-eyebrow">
     <span class="section-num">04</span>
     <span class="section-rule"></span>
@@ -1571,7 +1647,7 @@ pre {
       developers
       <span class="table-name-tag">PRIMARY TABLE</span>
     </div>
-    <div class="schema-grid">
+    <div class="schema-scroll"><div class="schema-grid">
       <div class="schema-head">
         <div class="schema-head-cell">Column</div>
         <div class="schema-head-cell">Type</div>
@@ -1601,7 +1677,7 @@ pre {
       <div class="schema-row"><div class="schema-cell col-name">last_synced_at</div><div class="schema-cell col-type">TIMESTAMPTZ</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">Most recent successful GitHub data sync</div></div>
       <div class="schema-row"><div class="schema-cell col-name">score_updated_at</div><div class="schema-cell col-type">TIMESTAMPTZ</div><div class="schema-cell"></div><div class="schema-cell col-desc">Timestamp of last score recalculation</div></div>
       <div class="schema-row"><div class="schema-cell col-name">created_at</div><div class="schema-cell col-type">TIMESTAMPTZ</div><div class="schema-cell"></div><div class="schema-cell col-desc">Record insertion timestamp</div></div>
-    </div>
+    </div></div>
   </div>
 
   <!-- TABLE: repositories -->
@@ -1610,7 +1686,7 @@ pre {
       repositories
       <span class="table-name-tag">REPO METADATA</span>
     </div>
-    <div class="schema-grid">
+    <div class="schema-scroll"><div class="schema-grid">
       <div class="schema-head">
         <div class="schema-head-cell">Column</div>
         <div class="schema-head-cell">Type</div>
@@ -1633,7 +1709,7 @@ pre {
       <div class="schema-row"><div class="schema-cell col-name">contributors_count</div><div class="schema-cell col-type">INTEGER</div><div class="schema-cell"></div><div class="schema-cell col-desc">Distinct contributors (impact signal)</div></div>
       <div class="schema-row"><div class="schema-cell col-name">last_commit_at</div><div class="schema-cell col-type">TIMESTAMPTZ</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">Most recent commit timestamp</div></div>
       <div class="schema-row"><div class="schema-cell col-name">github_created_at</div><div class="schema-cell col-type">TIMESTAMPTZ</div><div class="schema-cell"></div><div class="schema-cell col-desc">Repository creation date</div></div>
-    </div>
+    </div></div>
   </div>
 
   <!-- TABLE: commits -->
@@ -1642,7 +1718,7 @@ pre {
       commits
       <span class="table-name-tag">HIGH-VOLUME TABLE · PARTITIONED BY MONTH</span>
     </div>
-    <div class="schema-grid">
+    <div class="schema-scroll"><div class="schema-grid">
       <div class="schema-head">
         <div class="schema-head-cell">Column</div>
         <div class="schema-head-cell">Type</div>
@@ -1660,7 +1736,7 @@ pre {
       <div class="schema-row"><div class="schema-cell col-name">committed_at</div><div class="schema-cell col-type">TIMESTAMPTZ</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">Git commit timestamp — partition key</div></div>
       <div class="schema-row"><div class="schema-cell col-name">is_merge_commit</div><div class="schema-cell col-type">BOOLEAN</div><div class="schema-cell"></div><div class="schema-cell col-desc">Merge commits weighted differently</div></div>
       <div class="schema-row"><div class="schema-cell col-name">gaming_score</div><div class="schema-cell col-type">SMALLINT</div><div class="schema-cell"></div><div class="schema-cell col-desc">0–100 likelihood this is spam (anti-gaming)</div></div>
-    </div>
+    </div></div>
   </div>
 
   <!-- TABLE: tech_stacks -->
@@ -1669,7 +1745,7 @@ pre {
       tech_stacks
       <span class="table-name-tag">TECHNOLOGY TAXONOMY</span>
     </div>
-    <div class="schema-grid">
+    <div class="schema-scroll"><div class="schema-grid">
       <div class="schema-head">
         <div class="schema-head-cell">Column</div>
         <div class="schema-head-cell">Type</div>
@@ -1681,7 +1757,7 @@ pre {
       <div class="schema-row"><div class="schema-cell col-name">category</div><div class="schema-cell col-type">VARCHAR(50)</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">language / framework / infra / ml</div></div>
       <div class="schema-row"><div class="schema-cell col-name">ecosystem</div><div class="schema-cell col-type">VARCHAR(50)</div><div class="schema-cell"></div><div class="schema-cell col-desc">web / systems / ml / mobile / devops</div></div>
       <div class="schema-row"><div class="schema-cell col-name">color_hex</div><div class="schema-cell col-type">CHAR(7)</div><div class="schema-cell"></div><div class="schema-cell col-desc">Display color for UI</div></div>
-    </div>
+    </div></div>
   </div>
 
   <!-- TABLE: developer_tech_stacks (join) -->
@@ -1690,7 +1766,7 @@ pre {
       developer_tech_stacks
       <span class="table-name-tag">JOIN TABLE · MANY-TO-MANY</span>
     </div>
-    <div class="schema-grid">
+    <div class="schema-scroll"><div class="schema-grid">
       <div class="schema-head">
         <div class="schema-head-cell">Column</div>
         <div class="schema-head-cell">Type</div>
@@ -1703,7 +1779,7 @@ pre {
       <div class="schema-row"><div class="schema-cell col-name">repo_count</div><div class="schema-cell col-type">INTEGER</div><div class="schema-cell"></div><div class="schema-cell col-desc">Number of repos using this stack</div></div>
       <div class="schema-row"><div class="schema-cell col-name">stack_rank</div><div class="schema-cell col-type">INTEGER</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">Rank in technology-specific leaderboard</div></div>
       <div class="schema-row"><div class="schema-cell col-name">updated_at</div><div class="schema-cell col-type">TIMESTAMPTZ</div><div class="schema-cell"></div><div class="schema-cell col-desc">Last recalculated</div></div>
-    </div>
+    </div></div>
   </div>
 
   <!-- TABLE: sync_jobs -->
@@ -1712,7 +1788,7 @@ pre {
       sync_jobs
       <span class="table-name-tag">INGESTION QUEUE STATE</span>
     </div>
-    <div class="schema-grid">
+    <div class="schema-scroll"><div class="schema-grid">
       <div class="schema-head">
         <div class="schema-head-cell">Column</div>
         <div class="schema-head-cell">Type</div>
@@ -1729,7 +1805,7 @@ pre {
       <div class="schema-row"><div class="schema-cell col-name">error_message</div><div class="schema-cell col-type">TEXT</div><div class="schema-cell"></div><div class="schema-cell col-desc">Error detail on failure</div></div>
       <div class="schema-row"><div class="schema-cell col-name">retry_count</div><div class="schema-cell col-type">SMALLINT</div><div class="schema-cell"></div><div class="schema-cell col-desc">Number of retry attempts (max 3)</div></div>
       <div class="schema-row"><div class="schema-cell col-name">github_rate_limit_reset</div><div class="schema-cell col-type">TIMESTAMPTZ</div><div class="schema-cell"></div><div class="schema-cell col-desc">When to retry if rate limited</div></div>
-    </div>
+    </div></div>
   </div>
 
   <!-- TABLE: leaderboard_cache -->
@@ -1738,7 +1814,7 @@ pre {
       leaderboard_snapshots
       <span class="table-name-tag">MATERIALIZED CACHE</span>
     </div>
-    <div class="schema-grid">
+    <div class="schema-scroll"><div class="schema-grid">
       <div class="schema-head">
         <div class="schema-head-cell">Column</div>
         <div class="schema-head-cell">Type</div>
@@ -1754,12 +1830,14 @@ pre {
       <div class="schema-row"><div class="schema-cell col-name">total_count</div><div class="schema-cell col-type">INTEGER</div><div class="schema-cell"></div><div class="schema-cell col-desc">Total developers in this filter scope</div></div>
       <div class="schema-row"><div class="schema-cell col-name">generated_at</div><div class="schema-cell col-type">TIMESTAMPTZ</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">Snapshot generation time for TTL check</div></div>
       <div class="schema-row"><div class="schema-cell col-name">expires_at</div><div class="schema-cell col-type">TIMESTAMPTZ</div><div class="schema-cell"><span class="col-idx">IDX</span></div><div class="schema-cell col-desc">When Redis should regenerate this snapshot</div></div>
-    </div>
+    </div></div>
   </div>
+</div><!-- /.section-inner -->
 </section>
 
 <!-- 05 ARCHITECTURE -->
 <section id="architecture" class="pitch-section">
+<div class="section-inner">
   <div class="section-eyebrow">
     <span class="section-num">05</span>
     <span class="section-rule"></span>
@@ -1861,10 +1939,12 @@ pre {
       </div>
     </div>
   </div>
+</div><!-- /.section-inner -->
 </section>
 
 <!-- 06 INGESTION -->
 <section id="ingestion" class="pitch-section dark-section">
+<div class="section-inner">
   <div class="section-eyebrow">
     <span class="section-num">06</span>
     <span class="section-rule"></span>
@@ -1965,11 +2045,13 @@ pre {
 } <span class="kw">satisfies</span> <span class="type">Record</span>&lt;<span class="type">string</span>, <span class="type">QueueConfig</span>&gt;;</pre></div>
       </div>
     </div>
-  </div>
+  </div><!-- /.two-col -->
+</div><!-- /.section-inner -->
 </section>
 
 <!-- 07 ANTI-GAMING -->
 <section id="anti-gaming" class="pitch-section" style="background:var(--paper2)">
+<div class="section-inner">
   <div class="section-eyebrow">
     <span class="section-num">07</span>
     <span class="section-rule"></span>
@@ -2019,11 +2101,14 @@ pre {
       <div class="detection-title">Star Velocity Anomaly</div>
       <div class="detection-body">Repositories gaining more than N stars per day from accounts with low follower counts or accounts created within 30 days of the starring event are weighted down in the impact calculation.</div>
     </div>
-  </div>
+    </div>
+  </div><!-- /.detection-grid -->
+</div><!-- /.section-inner -->
 </section>
 
 <!-- 08 SCALABILITY -->
 <section id="scalability" class="pitch-section">
+<div class="section-inner">
   <div class="section-eyebrow">
     <span class="section-num">08</span>
     <span class="section-rule"></span>
@@ -2126,11 +2211,13 @@ pre {
   <span class="kw">WHERE</span> gaming_score &lt; <span class="num">50</span>;</pre></div>
       </div>
     </div>
-  </div>
+  </div><!-- /.two-col -->
+</div><!-- /.section-inner -->
 </section>
 
 <!-- 09 MARKET -->
 <section id="market" class="pitch-section dark-section">
+<div class="section-inner">
   <div class="section-eyebrow">
     <span class="section-num">09</span>
     <span class="section-rule"></span>
@@ -2208,11 +2295,13 @@ pre {
         </div>
       </div>
     </div>
-  </div>
+  </div><!-- /.two-col -->
+</div><!-- /.section-inner -->
 </section>
 
 <!-- 10 ROADMAP -->
 <section id="roadmap" class="pitch-section" style="background:var(--paper2)">
+<div class="section-inner">
   <div class="section-eyebrow">
     <span class="section-num">10</span>
     <span class="section-rule"></span>
@@ -2275,11 +2364,13 @@ pre {
         </div>
       </div>
     </div>
-  </div>
+  </div><!-- /.roadmap -->
+</div><!-- /.section-inner -->
 </section>
 
 <!-- 11 CLOSING / THE ASK -->
 <section id="closing" class="pitch-section dark-section" style="min-height:100vh;display:flex;flex-direction:column;justify-content:center;">
+<div class="section-inner" style="width:100%;">
   <div class="section-eyebrow">
     <span class="section-num">11</span>
     <span class="section-rule"></span>
@@ -2297,7 +2388,7 @@ pre {
       </div>
       <div class="cta-block">
         <div style="font-family:var(--mono);font-size:10px;letter-spacing:3px;color:rgba(245,242,235,0.3);margin-bottom:12px;text-transform:uppercase;">Get in touch</div>
-        <a href="mailto:founders@pow.dev" class="cta-email">founders@pow.dev</a>
+        <a href="/cdn-cgi/l/email-protection#f99f968c979d9c8b8ab989968ed79d9c8f" class="cta-email"><span class="__cf_email__" data-cfemail="3e58514b505a5b4c4d7e4e5149105a5b48">[email&#160;protected]</span></a>
         <div class="cta-meta">
           pow.dev<br>
           Confidential · 2025
@@ -2340,12 +2431,13 @@ pre {
         </p>
       </div>
     </div>
-  </div>
+  </div><!-- /.closing-grid -->
+</div><!-- /.section-inner -->
 </section>
 
 </main>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ── PROGRESS BAR ──
 window.addEventListener('scroll', () => {
   const scrolled = window.scrollY;
@@ -2427,15 +2519,4 @@ let chipIdx = 0;
 setInterval(() => {
   archChips.forEach(c => c.style.boxShadow = '');
   archChips[chipIdx % archChips.length].style.boxShadow = '0 0 12px rgba(201,168,76,0.4)';
-  chipIdx++;
-}, 1200);
-
-// ── CLOSE SIDEBAR ON LINK CLICK (mobile) ──
-navLinks.forEach(a => {
-  a.addEventListener('click', () => {
-    document.getElementById('sidebar').classList.remove('open');
-  });
-});
-</script>
-</body>
-</html>
+  ch
